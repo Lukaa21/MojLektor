@@ -1,7 +1,21 @@
 import type { NextConfig } from "next";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    if (!apiBaseUrl) {
+      return [];
+    }
+
+    const target = apiBaseUrl.replace(/\/$/, "");
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${target}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
