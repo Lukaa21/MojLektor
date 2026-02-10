@@ -6,6 +6,7 @@ import {
   postJson,
   type EstimateResponse,
   type ProcessResponse,
+  type Language,
   type ServiceType,
 } from "../lib/api";
 import { EstimateDisplay } from "../components/EstimateDisplay";
@@ -30,10 +31,19 @@ const textTypeOptions = [
   { value: "knjiga", label: "Knjiga / rukopis" },
 ];
 
+const languageOptions = [
+  { value: "", label: "Odaberite jezik", disabled: true },
+  { value: "crnogorski", label: "Crnogorski" },
+  { value: "srpski", label: "Srpski" },
+  { value: "hrvatski", label: "Hrvatski" },
+  { value: "bosanski", label: "Bosanski" },
+];
+
 export default function Home() {
   const [rawText, setRawText] = useState("");
   const [serviceType, setServiceType] = useState<ServiceType>("LEKTURA");
   const [textType, setTextType] = useState("");
+  const [language, setLanguage] = useState<Language | "">("");
   const [processedText, setProcessedText] = useState("");
   const [cardCount, setCardCount] = useState(0);
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null);
@@ -50,6 +60,10 @@ export default function Home() {
 
     if (!textType) {
       return "Odaberite vrstu teksta.";
+    }
+
+    if (!language) {
+      return "Odaberite jezik.";
     }
 
     return null;
@@ -71,6 +85,7 @@ export default function Home() {
         rawText: trimmedText,
         serviceType,
         textType,
+        language,
       });
 
       setProcessedText(data.processedText);
@@ -99,6 +114,7 @@ export default function Home() {
         rawText: trimmedText,
         serviceType,
         textType,
+        language,
       });
       setEstimate(data);
     } catch (err) {
@@ -151,6 +167,13 @@ export default function Home() {
               value={textType}
               options={textTypeOptions}
               onChange={setTextType}
+            />
+            <SelectInput
+              id="language"
+              label="Jezik"
+              value={language}
+              options={languageOptions}
+              onChange={(value) => setLanguage(value as Language)}
             />
             <div className="mt-auto grid gap-3">
               <button

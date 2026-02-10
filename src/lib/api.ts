@@ -1,9 +1,11 @@
 export type ServiceType = "LEKTURA" | "KOREKTURA" | "BOTH";
+export type Language = "crnogorski" | "srpski" | "hrvatski" | "bosanski";
 
 export type ProcessRequest = {
   rawText: string;
   serviceType: ServiceType;
   textType: string;
+  language: Language;
 };
 
 export type ProcessResponse = {
@@ -16,6 +18,7 @@ export type EstimateRequest = {
   rawText: string;
   serviceType: ServiceType;
   textType: string;
+  language: Language;
 };
 
 export type EstimateResponse = {

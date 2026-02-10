@@ -30,6 +30,10 @@ describe("Home page", () => {
       screen.getByLabelText("Vrsta teksta"),
       "akademski rad"
     );
+    await user.selectOptions(
+      screen.getByLabelText("Jezik"),
+      "srpski"
+    );
 
     await user.click(
       screen.getByRole("button", { name: "Posalji na obradu" })
@@ -71,6 +75,10 @@ describe("Home page", () => {
     await user.selectOptions(
       screen.getByLabelText("Vrsta teksta"),
       "akademski rad"
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Jezik"),
+      "srpski"
     );
 
     await user.click(
@@ -120,6 +128,30 @@ describe("Home page", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Odaberite vrstu teksta."
+    );
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("blocks submit when language is missing", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch({}) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    await user.type(
+      screen.getByLabelText("Tekst za obradu"),
+      "Test."
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Vrsta teksta"),
+      "akademski rad"
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Posalji na obradu" })
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Odaberite jezik."
     );
     expect(global.fetch).not.toHaveBeenCalled();
   });
