@@ -9,6 +9,7 @@ import {
   type Language,
   type ServiceType,
 } from "../lib/api";
+import DiffDisplay from "../components/DiffDisplay";
 import { EstimateDisplay } from "../components/EstimateDisplay";
 import { ErrorMessage } from "../components/Error";
 import { Header } from "../components/Header";
@@ -45,6 +46,8 @@ export default function Home() {
   const [textType, setTextType] = useState("");
   const [language, setLanguage] = useState<Language | "">("");
   const [processedText, setProcessedText] = useState("");
+  const [originalText, setOriginalText] = useState("");
+  const [diffOps, setDiffOps] = useState<Array<unknown> | null>(null);
   const [cardCount, setCardCount] = useState(0);
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -88,7 +91,9 @@ export default function Home() {
         language,
       });
 
-      setProcessedText(data.processedText);
+      setOriginalText(data.original);
+      setProcessedText(data.edited);
+      setDiffOps(data.diff ?? null);
       setCardCount(data.cardCount);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Greska u obradi.";
@@ -208,7 +213,11 @@ export default function Home() {
             totalPrice={estimate.totalPrice}
           />
         ) : null}
-        {processedText ? (
+        {diffOps ? (
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore - diff shape is dynamic from backend
+          <DiffDisplay original={originalText} edited={processedText} diff={diffOps} cardCount={cardCount} />
+        ) : processedText ? (
           <ResultDisplay processedText={processedText} cardCount={cardCount} />
         ) : null}
       </main>

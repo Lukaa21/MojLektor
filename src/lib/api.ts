@@ -9,7 +9,9 @@ export type ProcessRequest = {
 };
 
 export type ProcessResponse = {
-  processedText: string;
+  original: string;
+  edited: string;
+  diff: Array<unknown>;
   cardCount: number;
   status: "DONE";
 };

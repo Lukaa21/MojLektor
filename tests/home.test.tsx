@@ -13,9 +13,11 @@ const mockFetch = (payload: unknown, ok = true) => {
 describe("Home page", () => {
   it("submits text to /api/process and renders result", async () => {
     const user = userEvent.setup({ delay: 0 });
-    const processedText = "Uloga: Korektor...\nTekst:\nTest.";
+    const edited = "Uloga: Korektor...\nTekst:\nTest.";
     global.fetch = mockFetch({
-      processedText,
+      edited,
+      original: "Test.",
+      diff: [],
       cardCount: 1,
       status: "DONE",
     }) as unknown as typeof fetch;
@@ -47,10 +49,8 @@ describe("Home page", () => {
     });
 
     expect(await screen.findByText("Rezultat")).toBeInTheDocument();
-    const result = (await screen.findByLabelText(
-      "Procesirani tekst"
-    )) as HTMLTextAreaElement;
-    expect(result).toHaveValue(processedText);
+    const editedNode = await screen.findByLabelText("Izmijenjeni tekst");
+    expect(editedNode).toHaveTextContent(edited);
   });
 
   it("requests estimate and shows pricing", async () => {
