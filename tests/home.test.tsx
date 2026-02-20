@@ -38,7 +38,7 @@ describe("Home page", () => {
     );
 
     await user.click(
-      screen.getByRole("button", { name: "Posalji na obradu" })
+      screen.getByRole("button", { name: "Pošalji na obradu" })
     );
 
     await waitFor(() => {
@@ -103,7 +103,7 @@ describe("Home page", () => {
     render(<Home />);
 
     await user.click(
-      screen.getByRole("button", { name: "Posalji na obradu" })
+      screen.getByRole("button", { name: "Pošalji na obradu" })
     );
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
@@ -123,7 +123,7 @@ describe("Home page", () => {
       "Test."
     );
     await user.click(
-      screen.getByRole("button", { name: "Posalji na obradu" })
+      screen.getByRole("button", { name: "Pošalji na obradu" })
     );
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
@@ -147,7 +147,7 @@ describe("Home page", () => {
       "akademski rad"
     );
     await user.click(
-      screen.getByRole("button", { name: "Posalji na obradu" })
+      screen.getByRole("button", { name: "Pošalji na obradu" })
     );
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
@@ -175,7 +175,8 @@ describe("Home page", () => {
     await user.upload(fileInput, file);
     await user.selectOptions(screen.getByLabelText("Vrsta teksta"), "akademski rad");
     await user.selectOptions(screen.getByLabelText("Jezik"), "srpski");
-    await user.click(screen.getByRole("button", { name: "Posalji na obradu" }));
+    await user.click(screen.getByRole("button", { name: "Pošalji na obradu" }));
+    
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(

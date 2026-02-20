@@ -29,7 +29,7 @@ export const EstimateDisplay = ({
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span>Medjuzbir</span>
+          <span>Međuzbir</span>
           <span className="font-medium text-slate-900">
             {formatPrice(subtotal)}
           </span>

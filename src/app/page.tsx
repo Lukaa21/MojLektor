@@ -27,8 +27,8 @@ const serviceOptions = [
 const textTypeOptions = [
   { value: "", label: "Odaberite vrstu teksta", disabled: true },
   { value: "akademski rad", label: "Akademski rad" },
-  { value: "clanak", label: "Clanak" },
-  { value: "zvanicni dokument", label: "Zvanicni dokument" },
+  { value: "clanak", label: "Članak" },
+  { value: "zvanicni dokument", label: "Zvanični dokument" },
   { value: "knjiga", label: "Knjiga / rukopis" },
 ];
 
@@ -123,7 +123,7 @@ export default function Home() {
         setRawText(data.original);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Greska u obradi.";
+      const message = err instanceof Error ? err.message : "Greška u obradi.";
       setError(message);
     } finally {
       setIsProcessing(false);
@@ -151,7 +151,7 @@ export default function Home() {
 
     if (nextFile.size > 10 * 1024 * 1024) {
       setFile(null);
-      setFileError("Fajl je prevelik. Maksimalna velicina je 10MB.");
+      setFileError("Fajl je prevelik. Maksimalna veličina je 10MB.");
       return;
     }
 
@@ -185,7 +185,7 @@ export default function Home() {
       }
       setEstimate(data);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Greska u procjeni.";
+      const message = err instanceof Error ? err.message : "Greška u procjeni.";
       setError(message);
     } finally {
       setIsEstimating(false);
@@ -199,7 +199,7 @@ export default function Home() {
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-10 sm:px-8 lg:px-12">
         <Header
           title="MojLektor"
-          subtitle="Automatizovana lektura i korektura za tekstove sa balkanskog govornog podrucja. Fokus na citljivost, jasnocu i uredan akademski stil."
+          subtitle="Automatizovana lektura i korektura za tekstove sa balkanskog govornog područja. Fokus na čitljivosti, jasnoći i urednom akademskom stilu."
         />
 
         <motion.section
@@ -220,7 +220,7 @@ export default function Home() {
                   setFileError(null);
                 }
               }}
-              placeholder="Zalijepite tekst koji zelite da obradite..."
+              placeholder="Zalijepite tekst koji želite da obradite..."
             />
             <div className="flex flex-col gap-2">
               <label htmlFor="uploadFile" className="text-sm font-medium text-slate-700">
@@ -290,7 +290,7 @@ export default function Home() {
                 disabled={isBusy}
                 className="w-full cursor-pointer rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Posalji na obradu
+                Pošalji na obradu
               </button>
               <button
                 type="button"
@@ -301,10 +301,6 @@ export default function Home() {
                 Procijeni cijenu
               </button>
             </div>
-            <p className="text-xs leading-5 text-slate-500">
-              Obrada se izvrsava sekvencijalno po karticama. Rezultat zadrzava
-              originalni redoslijed.
-            </p>
           </div>
         </motion.section>
 
@@ -353,7 +349,7 @@ const submitUploadedFile = async (
     const message =
       "error" in payload && payload.error?.message
         ? payload.error.message
-        : "Neuspjesan upload.";
+        : "Neuspješan upload.";
     throw new Error(message);
   }
 
@@ -386,8 +382,8 @@ const submitEstimateFromUploadedFile = async (
       typeof payload === "object" && payload !== null && "error" in payload
         ? typeof payload.error === "string"
           ? payload.error
-          : payload.error?.message || "Neuspjesna procjena fajla."
-        : "Neuspjesna procjena fajla.";
+          : payload.error?.message || "Neuspješna procjena fajla."
+        : "Neuspješna procjena fajla.";
     throw new Error(message);
   }
 

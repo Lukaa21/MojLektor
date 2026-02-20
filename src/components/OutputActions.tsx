@@ -35,7 +35,7 @@ export const OutputActions = ({
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      setError("Kopiranje nije uspjelo. Pokusajte ponovo.");
+      setError("Kopiranje nije uspjelo. Pokušajte ponovo.");
     }
   };
 
@@ -48,7 +48,7 @@ export const OutputActions = ({
       setOpen(false);
       setError(null);
     } catch {
-      setError("Greska pri cuvanju TXT fajla.");
+      setError("Greška pri čuvanju TXT fajla.");
     }
   };
 
@@ -81,7 +81,7 @@ export const OutputActions = ({
       setOpen(false);
       setError(null);
     } catch {
-      setError("Greska pri generisanju PDF fajla.");
+      setError("Greška pri generisanju PDF fajla.");
     }
   };
 
@@ -111,7 +111,7 @@ export const OutputActions = ({
       setOpen(false);
       setError(null);
     } catch {
-      setError("Greska pri generisanju DOCX fajla.");
+      setError("Greška pri generisanju DOCX fajla.");
     }
   };
 
