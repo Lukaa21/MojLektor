@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   postJson,
   type EstimateResponse,
@@ -41,6 +41,8 @@ const languageOptions = [
 ];
 
 export default function Home() {
+  const conflictMessage =
+    "Možete odabrati ili unos teksta ili upload fajla.";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [rawText, setRawText] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -56,6 +58,7 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isEstimating, setIsEstimating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inputConflictWarning, setInputConflictWarning] = useState<string | null>(null);
 
   const trimmedText = useMemo(() => rawText.trim(), [rawText]);
 
@@ -75,6 +78,12 @@ export default function Home() {
     return null;
   };
 
+  useEffect(() => {
+    if (!trimmedText && !file) {
+      setInputConflictWarning(null);
+    }
+  }, [trimmedText, file]);
+
   const resetTextState = () => {
     setRawText("");
     setOriginalText("");
@@ -84,6 +93,7 @@ export default function Home() {
     setCardCount(0);
     setError(null);
     setFileError(null);
+    setInputConflictWarning(null);
   };
 
   const clearUploadedFile = () => {
@@ -218,15 +228,18 @@ export default function Home() {
                 if (value.trim()) {
                   setFile(null);
                   setFileError(null);
+                  setInputConflictWarning(null);
                 }
               }}
+              disabledOverlayLabel="Upozorenje: aktivan je upload fajla"
+              onDisabledOverlayClick={() => setInputConflictWarning(conflictMessage)}
               placeholder="Zalijepite tekst koji želite da obradite..."
             />
             <div className="flex flex-col gap-2">
               <label htmlFor="uploadFile" className="text-sm font-medium text-slate-700">
                 Ili upload fajl (.txt, .pdf, .docx)
               </label>
-              <div className="flex items-center gap-2">
+              <div className="relative flex items-center gap-2">
                 <input
                   ref={fileInputRef}
                   id="uploadFile"
@@ -240,6 +253,14 @@ export default function Home() {
                   disabled={!!trimmedText}
                   className="block w-full cursor-pointer text-sm text-slate-700 file:mr-3 file:cursor-pointer file:rounded-full file:border file:border-slate-200 file:bg-white file:px-4 file:py-2 file:text-xs file:font-medium disabled:cursor-not-allowed"
                 />
+                {trimmedText ? (
+                  <button
+                    type="button"
+                    aria-label="Upozorenje: aktivan je unos teksta"
+                    onClick={() => setInputConflictWarning(conflictMessage)}
+                    className="absolute left-0 right-9 top-0 h-full cursor-pointer rounded-full bg-transparent"
+                  />
+                ) : null}
                 {file ? (
                   <button
                     type="button"
@@ -255,6 +276,11 @@ export default function Home() {
                 <p className="text-xs text-slate-600">Odabran fajl: {file.name}</p>
               ) : null}
               {fileError ? <p className="text-xs text-red-600">{fileError}</p> : null}
+              {inputConflictWarning ? (
+                <div className="flex items-start gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+                  <span>{inputConflictWarning}</span>
+                </div>
+              ) : null}
             </div>
             {error ? <ErrorMessage message={error} /> : null}
             {isProcessing ? <Loader label="Obrada u toku..." /> : null}

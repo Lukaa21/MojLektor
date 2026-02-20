@@ -267,4 +267,39 @@ describe("Home page", () => {
     expect(screen.getByLabelText("Tekst za obradu")).not.toBeDisabled();
     expect(screen.getByLabelText("Upload fajla")).not.toBeDisabled();
   });
+
+  it("shows warning when trying to upload while text input is active", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch({}) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    await user.type(screen.getByLabelText("Tekst za obradu"), "Aktivan unos teksta");
+    await user.click(screen.getByRole("button", { name: "Upozorenje: aktivan je unos teksta" }));
+
+    expect(
+      await screen.findByText(
+        "Možete odabrati ili unos teksta ili upload fajla."
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("shows warning when trying to type while file is active", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch({}) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    const fileInput = screen.getByLabelText("Upload fajla") as HTMLInputElement;
+    const file = new File(["Tekst iz fajla"], "warning.txt", { type: "text/plain" });
+    await user.upload(fileInput, file);
+
+    await user.click(screen.getByRole("button", { name: "Upozorenje: aktivan je upload fajla" }));
+
+    expect(
+      await screen.findByText(
+        "Možete odabrati ili unos teksta ili upload fajla."
+      )
+    ).toBeInTheDocument();
+  });
 });
