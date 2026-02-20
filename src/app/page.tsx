@@ -7,8 +7,8 @@ import {
   type EstimateResponse,
   type ProcessResponse,
   type Language,
-  type ServiceType,
 } from "../lib/api";
+import type { ServiceType } from "../../../src/core/models";
 import DiffDisplay from "../components/DiffDisplay";
 import { EstimateDisplay } from "../components/EstimateDisplay";
 import { ErrorMessage } from "../components/Error";
@@ -17,6 +17,8 @@ import { Loader } from "../components/Loader";
 import { ResultDisplay } from "../components/ResultDisplay";
 import { SelectInput } from "../components/SelectInput";
 import { TextInput } from "../components/TextInput";
+import { MAX_CARD_CHARS } from "../../../src/core/segmenter";
+import { calculatePrice } from "../../../src/core/pricing";
 
 const serviceOptions = [
   { value: "LEKTURA", label: "Lektura" },
@@ -40,6 +42,10 @@ const languageOptions = [
   { value: "bosanski", label: "Bosanski" },
 ];
 
+const VALIDATION_EMPTY_TEXT = "Unesite tekst prije slanja.";
+const VALIDATION_TEXT_TYPE = "Odaberite vrstu teksta.";
+const VALIDATION_LANGUAGE = "Odaberite jezik.";
+
 export default function Home() {
   const conflictMessage =
     "Možete odabrati ili unos teksta ili upload fajla.";
@@ -47,7 +53,7 @@ export default function Home() {
   const [rawText, setRawText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [serviceType, setServiceType] = useState<ServiceType>("LEKTURA");
+  const [serviceType, setServiceType] = useState<ServiceType>("LEKTURA" as ServiceType);
   const [textType, setTextType] = useState("");
   const [language, setLanguage] = useState<Language | "">("");
   const [processedText, setProcessedText] = useState("");
@@ -62,20 +68,112 @@ export default function Home() {
 
   const trimmedText = useMemo(() => rawText.trim(), [rawText]);
 
-  const validateInput = () => {
-    if (!trimmedText && !file) {
-      return "Unesite tekst prije slanja.";
+  const liveEstimate = useMemo(() => {
+    if (!rawText.length) {
+      return null;
     }
 
-    if (!textType) {
-      return "Odaberite vrstu teksta.";
+    const cardCount = Math.ceil(rawText.length / MAX_CARD_CHARS);
+    const pricing = calculatePrice(serviceType, cardCount);
+    const lastCardChars = rawText.length % MAX_CARD_CHARS || MAX_CARD_CHARS;
+
+    return {
+      cardCount,
+      perCard: pricing.perCard,
+      subtotal: pricing.subtotal,
+      totalPrice: pricing.total,
+      lastCardChars,
+    };
+  }, [rawText, serviceType]);
+
+  const estimateHintMessage = useMemo(() => {
+    if (!liveEstimate) {
+      return null;
     }
 
-    if (!language) {
-      return "Odaberite jezik.";
+    if (rawText.length < 401) {
+      return null;
+    }
+
+    const lastCardChars = liveEstimate.lastCardChars;
+
+    if (lastCardChars === MAX_CARD_CHARS) {
+      return null;
+    }
+
+    if (lastCardChars <= 400) {
+      const charsToRemove = lastCardChars;
+      const reducedCardCount = Math.max(liveEstimate.cardCount - 1, 0);
+      const reducedPrice = calculatePrice(serviceType, reducedCardCount).total;
+      if (process.env.NODE_ENV !== "production") {
+        console.info("[estimate-debug]", {
+          rawTextLength: rawText.length,
+          cardCount: liveEstimate.cardCount,
+          lastCardChars,
+          charsToRemove,
+          reducedCardCount,
+          reducedPrice,
+          mode: "remove",
+        });
+      }
+      return `Ako uklonite još ${charsToRemove} karakter/a, cijena će biti ${reducedPrice.toFixed(2)} EUR.`;
+    }
+
+    if (lastCardChars > 401) {
+      const addableChars = MAX_CARD_CHARS - lastCardChars;
+      if (process.env.NODE_ENV !== "production") {
+        console.info("[estimate-debug]", {
+          rawTextLength: rawText.length,
+          cardCount: liveEstimate.cardCount,
+          lastCardChars,
+          addableChars,
+          mode: "add",
+        });
+      }
+      return `Za istu cijenu možete dodati još ${addableChars} karakter/a.`;
     }
 
     return null;
+  }, [liveEstimate, rawText.length, serviceType]);
+
+  const validateInput = () => {
+    if (!trimmedText && !file) {
+      return VALIDATION_EMPTY_TEXT;
+    }
+
+    if (!textType) {
+      return VALIDATION_TEXT_TYPE;
+    }
+
+    if (!language) {
+      return VALIDATION_LANGUAGE;
+    }
+
+    return null;
+  };
+
+  const clearValidationAlertIfResolved = (
+    field: "text-source" | "textType" | "language"
+  ) => {
+    setError((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      if (field === "text-source" && prev === VALIDATION_EMPTY_TEXT) {
+        return null;
+      }
+
+      if (field === "textType" && prev === VALIDATION_TEXT_TYPE) {
+        return null;
+      }
+
+      if (field === "language" && prev === VALIDATION_LANGUAGE) {
+        return null;
+      }
+
+      return prev;
+    });
   };
 
   useEffect(() => {
@@ -167,6 +265,7 @@ export default function Home() {
 
     resetTextState();
     setFile(nextFile);
+    clearValidationAlertIfResolved("text-source");
   };
 
   const handleEstimate = async () => {
@@ -222,17 +321,21 @@ export default function Home() {
               id="rawText"
               label="Tekst za obradu"
               value={rawText}
-              disabled={!!file}
               onChange={(value) => {
-                setRawText(value);
-                if (value.trim()) {
+                if (file) {
                   setFile(null);
                   setFileError(null);
                   setInputConflictWarning(null);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                  }
+                }
+
+                setRawText(value);
+                if (value.trim()) {
+                  clearValidationAlertIfResolved("text-source");
                 }
               }}
-              disabledOverlayLabel="Upozorenje: aktivan je upload fajla"
-              onDisabledOverlayClick={() => setInputConflictWarning(conflictMessage)}
               placeholder="Zalijepite tekst koji želite da obradite..."
             />
             <div className="flex flex-col gap-2">
@@ -272,9 +375,6 @@ export default function Home() {
                   </button>
                 ) : null}
               </div>
-              {file ? (
-                <p className="text-xs text-slate-600">Odabran fajl: {file.name}</p>
-              ) : null}
               {fileError ? <p className="text-xs text-red-600">{fileError}</p> : null}
               {inputConflictWarning ? (
                 <div className="flex items-start gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
@@ -300,14 +400,24 @@ export default function Home() {
               label="Vrsta teksta"
               value={textType}
               options={textTypeOptions}
-              onChange={setTextType}
+              onChange={(value) => {
+                setTextType(value);
+                if (value) {
+                  clearValidationAlertIfResolved("textType");
+                }
+              }}
             />
             <SelectInput
               id="language"
               label="Jezik"
               value={language}
               options={languageOptions}
-              onChange={(value) => setLanguage(value as Language)}
+              onChange={(value) => {
+                setLanguage(value as Language);
+                if (value) {
+                  clearValidationAlertIfResolved("language");
+                }
+              }}
             />
             <div className="mt-auto grid gap-3">
               <button
@@ -330,12 +440,13 @@ export default function Home() {
           </div>
         </motion.section>
 
-        {estimate ? (
+        {estimate && liveEstimate ? (
           <EstimateDisplay
-            cardCount={estimate.cardCount}
-            perCard={estimate.priceBreakdown.perCard}
-            subtotal={estimate.priceBreakdown.subtotal}
-            totalPrice={estimate.totalPrice}
+            cardCount={liveEstimate.cardCount}
+            perCard={liveEstimate.perCard}
+            subtotal={liveEstimate.subtotal}
+            totalPrice={liveEstimate.totalPrice}
+            hintMessage={estimateHintMessage}
           />
         ) : null}
         {diffOps ? (

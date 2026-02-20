@@ -3,6 +3,7 @@ type EstimateDisplayProps = {
   perCard: number;
   subtotal: number;
   totalPrice: number;
+  hintMessage?: string | null;
 };
 
 const formatPrice = (value: number) => `${value.toFixed(2)} EUR`;
@@ -12,6 +13,7 @@ export const EstimateDisplay = ({
   perCard,
   subtotal,
   totalPrice,
+  hintMessage,
 }: EstimateDisplayProps) => {
   return (
     <section className="flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -40,6 +42,11 @@ export const EstimateDisplay = ({
             {formatPrice(totalPrice)}
           </span>
         </div>
+        {hintMessage ? (
+          <p className="mt-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            {hintMessage}
+          </p>
+        ) : null}
       </div>
     </section>
   );

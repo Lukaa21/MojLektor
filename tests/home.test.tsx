@@ -96,6 +96,40 @@ describe("Home page", () => {
     expect(screen.getByText("Kartice: 2")).toBeInTheDocument();
   }, 10000);
 
+  it("updates pricing in real time while typing spaces", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch({}) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    fireEvent.change(screen.getByLabelText("Tekst za obradu"), {
+      target: { value: `a${" ".repeat(400)}` },
+    });
+
+    expect(screen.queryByText("Procjena")).not.toBeInTheDocument();
+
+    await user.selectOptions(
+      screen.getByLabelText("Vrsta teksta"),
+      "akademski rad"
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Jezik"),
+      "srpski"
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Procijeni cijenu" })
+    );
+
+    expect(await screen.findByText("Procjena")).toBeInTheDocument();
+    expect(screen.getByText("Kartice: 1")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Tekst za obradu"), {
+      target: { value: `a${" ".repeat(1500)}` },
+    });
+
+    expect(screen.getByText("Kartice: 2")).toBeInTheDocument();
+  });
+
   it("blocks submit on empty input", async () => {
     const user = userEvent.setup({ delay: 0 });
     global.fetch = mockFetch({}) as unknown as typeof fetch;
@@ -130,6 +164,13 @@ describe("Home page", () => {
       "Odaberite vrstu teksta."
     );
     expect(global.fetch).not.toHaveBeenCalled();
+
+    await user.selectOptions(
+      screen.getByLabelText("Vrsta teksta"),
+      "akademski rad"
+    );
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("blocks submit when language is missing", async () => {
@@ -154,6 +195,36 @@ describe("Home page", () => {
       "Odaberite jezik."
     );
     expect(global.fetch).not.toHaveBeenCalled();
+
+    await user.selectOptions(
+      screen.getByLabelText("Jezik"),
+      "srpski"
+    );
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("clears empty-text alert when file becomes active", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch({}) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Pošalji na obradu" })
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unesite tekst prije slanja."
+    );
+
+    const fileInput = screen.getByLabelText("Upload fajla") as HTMLInputElement;
+    const file = new File(["Tekst iz fajla"], "alert-clear.txt", {
+      type: "text/plain",
+    });
+    await user.upload(fileInput, file);
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("submits uploaded file to /api/upload with multipart/form-data", async () => {
@@ -257,12 +328,12 @@ describe("Home page", () => {
     await user.click(screen.getByRole("button", { name: "Procijeni cijenu" }));
 
     expect(await screen.findByText("Procjena")).toBeInTheDocument();
-    expect(await screen.findByText(/Odabran fajl:/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ukloni fajl" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Ukloni fajl" }));
 
     expect(screen.queryByText("Procjena")).not.toBeInTheDocument();
-    expect(screen.queryByText(/Odabran fajl:/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ukloni fajl" })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Tekst za obradu")).toHaveValue("");
     expect(screen.getByLabelText("Tekst za obradu")).not.toBeDisabled();
     expect(screen.getByLabelText("Upload fajla")).not.toBeDisabled();
@@ -284,7 +355,7 @@ describe("Home page", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows warning when trying to type while file is active", async () => {
+  it("typing while file is active clears file and switches to text input", async () => {
     const user = userEvent.setup({ delay: 0 });
     global.fetch = mockFetch({}) as unknown as typeof fetch;
 
@@ -294,11 +365,73 @@ describe("Home page", () => {
     const file = new File(["Tekst iz fajla"], "warning.txt", { type: "text/plain" });
     await user.upload(fileInput, file);
 
-    await user.click(screen.getByRole("button", { name: "Upozorenje: aktivan je upload fajla" }));
+    const textInput = screen.getByLabelText("Tekst za obradu");
+    expect(textInput).not.toBeDisabled();
+
+    await user.type(textInput, "Novi unos");
+
+    expect(fileInput).toHaveValue("");
+    expect(screen.queryByRole("button", { name: "Ukloni fajl" })).not.toBeInTheDocument();
+    expect(textInput).toHaveValue("Novi unos");
+  });
+
+  it("shows exact removal hint when last card has 1 character", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch({}) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    fireEvent.change(screen.getByLabelText("Tekst za obradu"), {
+      target: { value: "a".repeat(1501) },
+    });
+
+    await user.selectOptions(
+      screen.getByLabelText("Vrsta teksta"),
+      "akademski rad"
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Jezik"),
+      "srpski"
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Procijeni cijenu" })
+    );
 
     expect(
       await screen.findByText(
-        "Možete odabrati ili unos teksta ili upload fajla."
+        /Ako uklonite još 1 karakter\/?a, cijena će biti 1\.00 EUR\./
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("shows exact removal hint when sentence split makes last card larger than real overflow", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch({}) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    const firstSentence = `${"a".repeat(1464)}. `;
+    const secondSentence = `${"b".repeat(34)}.`;
+
+    fireEvent.change(screen.getByLabelText("Tekst za obradu"), {
+      target: { value: `${firstSentence}${secondSentence}` },
+    });
+
+    await user.selectOptions(
+      screen.getByLabelText("Vrsta teksta"),
+      "akademski rad"
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Jezik"),
+      "srpski"
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Procijeni cijenu" })
+    );
+
+    expect(
+      await screen.findByText(
+        /Ako uklonite još 1 karakter\/?a, cijena će biti 1\.00 EUR\./
       )
     ).toBeInTheDocument();
   });
