@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   postJson,
   type EstimateResponse,
@@ -41,7 +41,10 @@ const languageOptions = [
 ];
 
 export default function Home() {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [rawText, setRawText] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [serviceType, setServiceType] = useState<ServiceType>("LEKTURA");
   const [textType, setTextType] = useState("");
   const [language, setLanguage] = useState<Language | "">("");
@@ -57,7 +60,7 @@ export default function Home() {
   const trimmedText = useMemo(() => rawText.trim(), [rawText]);
 
   const validateInput = () => {
-    if (!trimmedText) {
+    if (!trimmedText && !file) {
       return "Unesite tekst prije slanja.";
     }
 
@@ -72,6 +75,25 @@ export default function Home() {
     return null;
   };
 
+  const resetTextState = () => {
+    setRawText("");
+    setOriginalText("");
+    setProcessedText("");
+    setDiffOps(null);
+    setEstimate(null);
+    setCardCount(0);
+    setError(null);
+    setFileError(null);
+  };
+
+  const clearUploadedFile = () => {
+    setFile(null);
+    resetTextState();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleProcess = async () => {
     setError(null);
     const validationError = validateInput();
@@ -84,23 +106,57 @@ export default function Home() {
     setProcessedText("");
 
     try {
-      const data = await postJson<ProcessResponse>("/api/process", {
-        rawText: trimmedText,
-        serviceType,
-        textType,
-        language,
-      });
+      const data = file
+        ? await submitUploadedFile(file, serviceType, textType, language as Language)
+        : await postJson<ProcessResponse>("/api/process", {
+            rawText: trimmedText,
+            serviceType,
+            textType,
+            language,
+          });
 
       setOriginalText(data.original);
       setProcessedText(data.edited);
       setDiffOps(data.diff ?? null);
       setCardCount(data.cardCount);
+      if (file && data.original) {
+        setRawText(data.original);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Greska u obradi.";
       setError(message);
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleFileChange = (nextFile: File | null) => {
+    setFileError(null);
+
+    if (!nextFile) {
+      setFile(null);
+      return;
+    }
+
+    const allowed = [".txt", ".pdf", ".docx"];
+    const ext = nextFile.name.includes(".")
+      ? nextFile.name.slice(nextFile.name.lastIndexOf(".")).toLowerCase()
+      : "";
+
+    if (!allowed.includes(ext)) {
+      setFile(null);
+      setFileError("Dozvoljeni tipovi: .txt, .pdf, .docx");
+      return;
+    }
+
+    if (nextFile.size > 10 * 1024 * 1024) {
+      setFile(null);
+      setFileError("Fajl je prevelik. Maksimalna velicina je 10MB.");
+      return;
+    }
+
+    resetTextState();
+    setFile(nextFile);
   };
 
   const handleEstimate = async () => {
@@ -115,12 +171,18 @@ export default function Home() {
     setEstimate(null);
 
     try {
-      const data = await postJson<EstimateResponse>("/api/estimate", {
-        rawText: trimmedText,
-        serviceType,
-        textType,
-        language,
-      });
+      const data = file
+        ? await submitEstimateFromUploadedFile(file, serviceType, textType, language as Language)
+        : await postJson<EstimateResponse>("/api/estimate", {
+            rawText: trimmedText,
+            serviceType,
+            textType,
+            language,
+          });
+
+      if (file && data.rawText) {
+        setRawText(data.rawText);
+      }
       setEstimate(data);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Greska u procjeni.";
@@ -150,9 +212,50 @@ export default function Home() {
               id="rawText"
               label="Tekst za obradu"
               value={rawText}
-              onChange={setRawText}
+              disabled={!!file}
+              onChange={(value) => {
+                setRawText(value);
+                if (value.trim()) {
+                  setFile(null);
+                  setFileError(null);
+                }
+              }}
               placeholder="Zalijepite tekst koji zelite da obradite..."
             />
+            <div className="flex flex-col gap-2">
+              <label htmlFor="uploadFile" className="text-sm font-medium text-slate-700">
+                Ili upload fajl (.txt, .pdf, .docx)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  id="uploadFile"
+                  type="file"
+                  aria-label="Upload fajla"
+                  accept=".txt,.pdf,.docx"
+                  onChange={(event) => {
+                    const selected = event.target.files?.[0] ?? null;
+                    handleFileChange(selected);
+                  }}
+                  disabled={!!trimmedText}
+                  className="block w-full cursor-pointer text-sm text-slate-700 file:mr-3 file:cursor-pointer file:rounded-full file:border file:border-slate-200 file:bg-white file:px-4 file:py-2 file:text-xs file:font-medium disabled:cursor-not-allowed"
+                />
+                {file ? (
+                  <button
+                    type="button"
+                    aria-label="Ukloni fajl"
+                    onClick={clearUploadedFile}
+                    className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-sm text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                  >
+                    x
+                  </button>
+                ) : null}
+              </div>
+              {file ? (
+                <p className="text-xs text-slate-600">Odabran fajl: {file.name}</p>
+              ) : null}
+              {fileError ? <p className="text-xs text-red-600">{fileError}</p> : null}
+            </div>
             {error ? <ErrorMessage message={error} /> : null}
             {isProcessing ? <Loader label="Obrada u toku..." /> : null}
             {isEstimating ? <Loader label="Procjena u toku..." /> : null}
@@ -185,7 +288,7 @@ export default function Home() {
                 type="button"
                 onClick={handleProcess}
                 disabled={isBusy}
-                className="w-full rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full cursor-pointer rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Posalji na obradu
               </button>
@@ -193,7 +296,7 @@ export default function Home() {
                 type="button"
                 onClick={handleEstimate}
                 disabled={isBusy}
-                className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full cursor-pointer rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Procijeni cijenu
               </button>
@@ -224,3 +327,69 @@ export default function Home() {
     </div>
   );
 }
+
+const submitUploadedFile = async (
+  file: File,
+  serviceType: ServiceType,
+  textType: string,
+  language: Language
+): Promise<ProcessResponse> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("serviceType", serviceType);
+  formData.append("textType", textType);
+  formData.append("language", language);
+
+  const response = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  const payload = (await response.json()) as
+    | ProcessResponse
+    | { error?: { code?: string; message?: string } };
+
+  if (!response.ok) {
+    const message =
+      "error" in payload && payload.error?.message
+        ? payload.error.message
+        : "Neuspjesan upload.";
+    throw new Error(message);
+  }
+
+  return payload as ProcessResponse;
+};
+
+const submitEstimateFromUploadedFile = async (
+  file: File,
+  serviceType: ServiceType,
+  textType: string,
+  language: Language
+): Promise<EstimateResponse> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("serviceType", serviceType);
+  formData.append("textType", textType);
+  formData.append("language", language);
+
+  const response = await fetch("/api/estimate", {
+    method: "POST",
+    body: formData,
+  });
+
+  const payload = (await response.json()) as
+    | EstimateResponse
+    | { error?: string | { code?: string; message?: string } };
+
+  if (!response.ok) {
+    const message =
+      typeof payload === "object" && payload !== null && "error" in payload
+        ? typeof payload.error === "string"
+          ? payload.error
+          : payload.error?.message || "Neuspjesna procjena fajla."
+        : "Neuspjesna procjena fajla.";
+    throw new Error(message);
+  }
+
+  return payload as EstimateResponse;
+};

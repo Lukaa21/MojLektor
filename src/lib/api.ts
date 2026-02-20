@@ -24,6 +24,7 @@ export type EstimateRequest = {
 };
 
 export type EstimateResponse = {
+  rawText?: string;
   cardCount: number;
   priceBreakdown: {
     serviceType: ServiceType;

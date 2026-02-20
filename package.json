@@ -11,8 +11,10 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "docx": "^9.5.1",
     "framer-motion": "^11.18.2",
     "next": "16.1.6",
+    "pdfmake": "^0.2.20",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },

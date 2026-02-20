@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { OutputActions } from "./OutputActions";
 
 type DiffOp =
   | { type: "unchanged"; value: string }
@@ -58,6 +59,8 @@ export const DiffDisplay = ({ original, edited, diff, cardCount }: DiffDisplayPr
           </div>
         </section>
       </div>
+
+      <OutputActions outputText={edited} />
     </motion.section>
   );
 };

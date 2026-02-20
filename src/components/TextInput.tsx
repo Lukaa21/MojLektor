@@ -4,6 +4,7 @@ type TextInputProps = {
   value: string;
   placeholder?: string;
   rows?: number;
+  disabled?: boolean;
   onChange: (value: string) => void;
 };
 
@@ -13,6 +14,7 @@ export const TextInput = ({
   value,
   placeholder,
   rows = 12,
+  disabled = false,
   onChange,
 }: TextInputProps) => {
   return (
@@ -24,6 +26,7 @@ export const TextInput = ({
         id={id}
         rows={rows}
         value={value}
+        disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         className="min-h-[220px] w-full resize-y rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"

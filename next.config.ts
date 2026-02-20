@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
         source: "/api/process",
         destination: `${target}/api/process`,
       });
+      rewrites.push({
+        source: "/api/upload",
+        destination: `${target}/api/upload`,
+      });
     }
     if (estimateBaseUrl) {
       const target = estimateBaseUrl.replace(/\/$/, "");

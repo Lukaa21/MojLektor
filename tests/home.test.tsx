@@ -17,7 +17,7 @@ describe("Home page", () => {
     global.fetch = mockFetch({
       edited,
       original: "Test.",
-      diff: [],
+      diff: [{ type: "unchanged", value: edited }],
       cardCount: 1,
       status: "DONE",
     }) as unknown as typeof fetch;
@@ -50,7 +50,7 @@ describe("Home page", () => {
 
     expect(await screen.findByText("Rezultat")).toBeInTheDocument();
     const editedNode = await screen.findByLabelText("Izmijenjeni tekst");
-    expect(editedNode).toHaveTextContent(edited);
+    expect(editedNode).toHaveTextContent("Uloga: Korektor... Tekst: Test.");
   });
 
   it("requests estimate and shows pricing", async () => {
@@ -154,5 +154,116 @@ describe("Home page", () => {
       "Odaberite jezik."
     );
     expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("submits uploaded file to /api/upload with multipart/form-data", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    const edited = "Izmijenjen sadrzaj.";
+    global.fetch = mockFetch({
+      edited,
+      original: "Originalni sadrzaj.",
+      diff: [{ type: "unchanged", value: edited }],
+      cardCount: 1,
+      status: "DONE",
+    }) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    const fileInput = screen.getByLabelText("Upload fajla") as HTMLInputElement;
+    const file = new File(["Tekst iz fajla"], "test.txt", { type: "text/plain" });
+
+    await user.upload(fileInput, file);
+    await user.selectOptions(screen.getByLabelText("Vrsta teksta"), "akademski rad");
+    await user.selectOptions(screen.getByLabelText("Jezik"), "srpski");
+    await user.click(screen.getByRole("button", { name: "Posalji na obradu" }));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/upload",
+        expect.objectContaining({ method: "POST" })
+      );
+    });
+
+    const editedNode = await screen.findByLabelText("Izmijenjeni tekst");
+    expect(editedNode).toHaveTextContent(edited);
+  });
+
+  it("estimates price from uploaded file without rawText error", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch({
+      rawText: "Ekstrahovani tekst iz fajla.",
+      cardCount: 1,
+      priceBreakdown: {
+        serviceType: "LEKTURA",
+        perCard: 1,
+        cardCount: 1,
+        subtotal: 1,
+      },
+      totalPrice: 1,
+    }) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    const fileInput = screen.getByLabelText("Upload fajla") as HTMLInputElement;
+    const file = new File(["Tekst iz fajla"], "procjena.txt", { type: "text/plain" });
+
+    await user.upload(fileInput, file);
+    await user.selectOptions(screen.getByLabelText("Vrsta teksta"), "akademski rad");
+    await user.selectOptions(screen.getByLabelText("Jezik"), "srpski");
+    await user.click(screen.getByRole("button", { name: "Procijeni cijenu" }));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/estimate",
+        expect.objectContaining({ method: "POST" })
+      );
+    });
+
+    expect(await screen.findByText("Procjena")).toBeInTheDocument();
+    expect(screen.queryByText(/rawText, serviceType, textType, and language are required/i)).not.toBeInTheDocument();
+  });
+
+  it("clears uploaded file and resets text/estimate state", async () => {
+    const user = userEvent.setup({ delay: 0 });
+
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          rawText: "Ekstrahovani tekst iz fajla.",
+          cardCount: 1,
+          priceBreakdown: {
+            serviceType: "LEKTURA",
+            perCard: 1,
+            cardCount: 1,
+            subtotal: 1,
+          },
+          totalPrice: 1,
+        }),
+      }) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    const fileInput = screen.getByLabelText("Upload fajla") as HTMLInputElement;
+    const file = new File(["Tekst iz fajla"], "clear-me.txt", {
+      type: "text/plain",
+    });
+
+    await user.upload(fileInput, file);
+    await user.selectOptions(screen.getByLabelText("Vrsta teksta"), "akademski rad");
+    await user.selectOptions(screen.getByLabelText("Jezik"), "srpski");
+    await user.click(screen.getByRole("button", { name: "Procijeni cijenu" }));
+
+    expect(await screen.findByText("Procjena")).toBeInTheDocument();
+    expect(await screen.findByText(/Odabran fajl:/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Ukloni fajl" }));
+
+    expect(screen.queryByText("Procjena")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Odabran fajl:/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Tekst za obradu")).toHaveValue("");
+    expect(screen.getByLabelText("Tekst za obradu")).not.toBeDisabled();
+    expect(screen.getByLabelText("Upload fajla")).not.toBeDisabled();
   });
 });
