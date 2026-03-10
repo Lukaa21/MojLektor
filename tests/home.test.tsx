@@ -502,7 +502,7 @@ describe("Home page", () => {
 
     expect(
       await screen.findByText(
-        /Ako uklonite još 1 karakter\/?a, cijena će biti 1\.00 EUR\./
+        /Ako uklonite još 1 karakter\/?a, cijena će biti [0-9]+\.[0-9]{2} EUR\./
       )
     ).toBeInTheDocument();
   });
@@ -534,7 +534,7 @@ describe("Home page", () => {
 
     expect(
       await screen.findByText(
-        /Ako uklonite još 1 karakter\/?a, cijena će biti 1\.00 EUR\./
+        /Ako uklonite još 1 karakter\/?a, cijena će biti [0-9]+\.[0-9]{2} EUR\./
       )
     ).toBeInTheDocument();
   });

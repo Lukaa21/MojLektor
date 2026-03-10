@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Manrope } from "next/font/google";
+import Navbar from "../components/Navbar";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -30,7 +31,10 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} ${plexMono.variable} antialiased`}
       >
-        {children}
+        <div className="min-h-screen">
+          <Navbar />
+          {children}
+        </div>
       </body>
     </html>
   );

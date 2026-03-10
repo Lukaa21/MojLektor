@@ -55,7 +55,7 @@ export default function Home() {
   const [rawText, setRawText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [serviceType, setServiceType] = useState<ServiceType>("LEKTURA" as ServiceType);
+  const [serviceType, setServiceType] = useState<ServiceType>("BOTH" as ServiceType);
   const [textType, setTextType] = useState("");
   const [language, setLanguage] = useState<Language | "">("");
   const [processedText, setProcessedText] = useState("");
