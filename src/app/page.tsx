@@ -3,13 +3,14 @@
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  postJson,
   type EstimateResponse,
   type ProcessResponse,
   type Language,
   type ReversibleChange,
   type ReversibleToken,
 } from "../lib/api";
+import { postJson } from "../lib/api";
+import { processCorrectionRequest } from "../lib/correctionRequest";
 import type { ServiceType } from "../../../src/core/models";
 import DiffDisplay from "../components/DiffDisplay";
 import { EstimateDisplay } from "../components/EstimateDisplay";
@@ -222,7 +223,7 @@ export default function Home() {
     try {
       const data = file
         ? await submitUploadedFile(file, serviceType, textType, language as Language)
-        : await postJson<ProcessResponse>("/api/process", {
+        : await processCorrectionRequest({
             rawText: trimmedText,
             serviceType,
             textType,

@@ -9,6 +9,7 @@ type SelectInputProps = {
   label: string;
   value: string;
   options: SelectOption[];
+  disabled?: boolean;
   onChange: (value: string) => void;
 };
 
@@ -17,6 +18,7 @@ export const SelectInput = ({
   label,
   value,
   options,
+  disabled = false,
   onChange,
 }: SelectInputProps) => {
   return (
@@ -27,6 +29,7 @@ export const SelectInput = ({
       <select
         id={id}
         value={value}
+        disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
         className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
         aria-label={label}
