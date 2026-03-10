@@ -11,6 +11,63 @@ const mockFetch = (payload: unknown, ok = true) => {
 };
 
 describe("Home page", () => {
+  const reversiblePayload = {
+    edited: "Idem kuci s Markom. Idem s tobom.",
+    original: "Idem kuci sa Markom. Idem sa tobom.",
+    diff: [
+      { type: "unchanged", value: "Idem kuci " },
+      { type: "modified", original: "sa", edited: "s" },
+      { type: "unchanged", value: " Markom. Idem " },
+      { type: "modified", original: "sa", edited: "s" },
+      { type: "unchanged", value: " tobom." },
+    ],
+    changes: [
+      {
+        id: "change_0",
+        original: "sa",
+        modified: "s",
+        startIndex: 10,
+        endIndex: 11,
+        groupKey: "sa→s",
+        status: "active",
+      },
+      {
+        id: "change_1",
+        original: "sa",
+        modified: "s",
+        startIndex: 25,
+        endIndex: 26,
+        groupKey: "sa→s",
+        status: "active",
+      },
+    ],
+    tokens: [
+      { id: "token_0", text: "Idem kuci ", startIndex: 0, endIndex: 10, status: "static" },
+      {
+        id: "token_1",
+        text: "s",
+        startIndex: 10,
+        endIndex: 11,
+        changeId: "change_0",
+        groupKey: "sa→s",
+        status: "active",
+      },
+      { id: "token_2", text: " Markom. Idem ", startIndex: 11, endIndex: 25, status: "static" },
+      {
+        id: "token_3",
+        text: "s",
+        startIndex: 25,
+        endIndex: 26,
+        changeId: "change_1",
+        groupKey: "sa→s",
+        status: "active",
+      },
+      { id: "token_4", text: " tobom.", startIndex: 26, endIndex: 33, status: "static" },
+    ],
+    cardCount: 1,
+    status: "DONE",
+  };
+
   it("submits text to /api/process and renders result", async () => {
     const user = userEvent.setup({ delay: 0 });
     const edited = "Uloga: Korektor...\nTekst:\nTest.";
@@ -95,6 +152,52 @@ describe("Home page", () => {
     expect(await screen.findByText("Procjena")).toBeInTheDocument();
     expect(screen.getByText("Kartice: 2")).toBeInTheDocument();
   }, 10000);
+
+  it("reverts a single highlighted edit on click", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch(reversiblePayload) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    await user.type(screen.getByLabelText("Tekst za obradu"), "Test.");
+    await user.selectOptions(screen.getByLabelText("Vrsta teksta"), "akademski rad");
+    await user.selectOptions(screen.getByLabelText("Jezik"), "srpski");
+    await user.click(screen.getByRole("button", { name: "Pošalji na obradu" }));
+
+    const editedNode = await screen.findByLabelText("Izmijenjeni tekst");
+    const firstChange = editedNode.querySelector('[data-change-id="change_0"]');
+    expect(firstChange).toBeInTheDocument();
+
+    await user.click(firstChange as HTMLElement);
+
+    expect(editedNode).toHaveTextContent("Idem kuci sa Markom. Idem s tobom.");
+    expect(editedNode.querySelector('[data-change-id="change_0"]')).not.toBeInTheDocument();
+  });
+
+  it("opens batch modal and reverts selected identical edits on ctrl/cmd click", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch(reversiblePayload) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    await user.type(screen.getByLabelText("Tekst za obradu"), "Test.");
+    await user.selectOptions(screen.getByLabelText("Vrsta teksta"), "akademski rad");
+    await user.selectOptions(screen.getByLabelText("Jezik"), "srpski");
+    await user.click(screen.getByRole("button", { name: "Pošalji na obradu" }));
+
+    const editedNode = await screen.findByLabelText("Izmijenjeni tekst");
+    const firstChange = editedNode.querySelector('[data-change-id="change_0"]');
+    expect(firstChange).toBeInTheDocument();
+
+    fireEvent.click(firstChange as HTMLElement, { ctrlKey: true });
+
+    expect(await screen.findByText("Potvrda grupnog vraćanja")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Potvrdi vraćanje" }));
+
+    expect(editedNode).toHaveTextContent("Idem kuci sa Markom. Idem sa tobom.");
+    expect(editedNode.querySelector('[data-change-id="change_1"]')).not.toBeInTheDocument();
+  });
 
   it("updates pricing in real time while typing spaces", async () => {
     const user = userEvent.setup({ delay: 0 });
@@ -433,6 +536,45 @@ describe("Home page", () => {
       await screen.findByText(
         /Ako uklonite još 1 karakter\/?a, cijena će biti 1\.00 EUR\./
       )
+    ).toBeInTheDocument();
+  });
+
+  it("keeps add hint stable after upload estimate when editing around 8500 chars", async () => {
+    const user = userEvent.setup({ delay: 0 });
+    global.fetch = mockFetch({
+      rawText: "a".repeat(8500),
+      cardCount: 6,
+      priceBreakdown: {
+        serviceType: "LEKTURA",
+        perCard: 1,
+        cardCount: 6,
+        subtotal: 6,
+      },
+      totalPrice: 6,
+    }) as unknown as typeof fetch;
+
+    render(<Home />);
+
+    const fileInput = screen.getByLabelText("Upload fajla") as HTMLInputElement;
+    const file = new File(["Tekst iz fajla"], "long.txt", { type: "text/plain" });
+
+    await user.upload(fileInput, file);
+    await user.selectOptions(screen.getByLabelText("Vrsta teksta"), "akademski rad");
+    await user.selectOptions(screen.getByLabelText("Jezik"), "srpski");
+    await user.click(screen.getByRole("button", { name: "Procijeni cijenu" }));
+
+    expect(await screen.findByText("Kartice: 6")).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Za istu cijenu možete dodati još 500 karakter\/?a\./)
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Tekst za obradu"), {
+      target: { value: "a".repeat(8501) },
+    });
+
+    expect(await screen.findByText("Kartice: 6")).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Za istu cijenu možete dodati još 499 karakter\/?a\./)
     ).toBeInTheDocument();
   });
 });

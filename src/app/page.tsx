@@ -7,6 +7,8 @@ import {
   type EstimateResponse,
   type ProcessResponse,
   type Language,
+  type ReversibleChange,
+  type ReversibleToken,
 } from "../lib/api";
 import type { ServiceType } from "../../../src/core/models";
 import DiffDisplay from "../components/DiffDisplay";
@@ -59,6 +61,8 @@ export default function Home() {
   const [processedText, setProcessedText] = useState("");
   const [originalText, setOriginalText] = useState("");
   const [diffOps, setDiffOps] = useState<Array<unknown> | null>(null);
+  const [reversibleChanges, setReversibleChanges] = useState<ReversibleChange[] | null>(null);
+  const [reversibleTokens, setReversibleTokens] = useState<ReversibleToken[] | null>(null);
   const [cardCount, setCardCount] = useState(0);
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -187,6 +191,8 @@ export default function Home() {
     setOriginalText("");
     setProcessedText("");
     setDiffOps(null);
+    setReversibleChanges(null);
+    setReversibleTokens(null);
     setEstimate(null);
     setCardCount(0);
     setError(null);
@@ -226,6 +232,8 @@ export default function Home() {
       setOriginalText(data.original);
       setProcessedText(data.edited);
       setDiffOps(data.diff ?? null);
+      setReversibleChanges(data.changes ?? null);
+      setReversibleTokens(data.tokens ?? null);
       setCardCount(data.cardCount);
       if (file && data.original) {
         setRawText(data.original);
@@ -450,9 +458,14 @@ export default function Home() {
           />
         ) : null}
         {diffOps ? (
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore - diff shape is dynamic from backend
-          <DiffDisplay original={originalText} edited={processedText} diff={diffOps} cardCount={cardCount} />
+          <DiffDisplay
+            original={originalText}
+            edited={processedText}
+            diff={diffOps as ProcessResponse["diff"]}
+            changes={reversibleChanges ?? []}
+            tokens={reversibleTokens ?? []}
+            cardCount={cardCount}
+          />
         ) : processedText ? (
           <ResultDisplay processedText={processedText} cardCount={cardCount} />
         ) : null}

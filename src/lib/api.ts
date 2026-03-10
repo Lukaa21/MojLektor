@@ -8,10 +8,38 @@ export type ProcessRequest = {
   language: Language;
 };
 
+export type DiffOp =
+  | { type: "unchanged"; value: string }
+  | { type: "deleted"; value: string }
+  | { type: "added"; value: string }
+  | { type: "modified"; original: string; edited: string };
+
+export type ReversibleChange = {
+  id: string;
+  original: string;
+  modified: string;
+  startIndex: number;
+  endIndex: number;
+  groupKey: string;
+  status: "active" | "reverted";
+};
+
+export type ReversibleToken = {
+  id: string;
+  text: string;
+  startIndex: number;
+  endIndex: number;
+  changeId?: string;
+  groupKey?: string;
+  status: "static" | "active" | "reverted";
+};
+
 export type ProcessResponse = {
   original: string;
   edited: string;
-  diff: Array<unknown>;
+  diff: DiffOp[];
+  changes: ReversibleChange[];
+  tokens: ReversibleToken[];
   cardCount: number;
   status: "DONE";
 };
