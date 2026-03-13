@@ -7,14 +7,15 @@ import { createFullDiff } from "../../core/diff";
 import {
   extractText,
   FileExtractionError,
-  MAX_UPLOAD_BYTES,
   validateExtension,
 } from "../../core/fileExtractor";
-import { Language, JobStatus, ServiceType } from "../../core/models";
+import { JobStatus, Language, ServiceType } from "../../core/models";
 import {
   consumeTokensForProcessing,
 } from "../../tokens/service";
 import { processRateLimit } from "../../middleware/rateLimit";
+import { validateProcessInput } from "../../validation/processInput";
+import { parseMultipart } from "../../utils/parseMultipart";
 
 export const config = {
   api: {
@@ -23,30 +24,6 @@ export const config = {
 };
 
 const MAX_INPUT_CHARS = 100_000;
-
-const allowedLanguages: Language[] = [
-  "crnogorski",
-  "srpski",
-  "hrvatski",
-  "bosanski",
-];
-
-const parseMultipart = (req: NextApiRequest) =>
-  new Promise<{ fields: formidable.Fields; files: formidable.Files }>(
-    (resolve, reject) => {
-      const form = formidable({
-        multiples: false,
-        maxFileSize: MAX_UPLOAD_BYTES,
-      });
-      form.parse(req, (err, fields, files) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve({ fields, files });
-      });
-    }
-  );
 
 export default async function handler(
   req: NextApiRequest,
@@ -114,17 +91,11 @@ export default async function handler(
       });
     }
 
-    if (!Object.values(ServiceType).includes(serviceType)) {
+    const validation = validateProcessInput(serviceType, language);
+    if (!validation.ok) {
       return res.status(400).json({
         success: false,
-        error: { code: "BAD_REQUEST", message: "Invalid serviceType" },
-      });
-    }
-
-    if (!allowedLanguages.includes(language)) {
-      return res.status(400).json({
-        success: false,
-        error: { code: "BAD_REQUEST", message: "Invalid language" },
+        error: { code: "BAD_REQUEST", message: validation.error },
       });
     }
 

@@ -6,12 +6,13 @@ import { Language, ServiceType } from "../core/models";
 import {
   extractText,
   FileExtractionError,
-  MAX_UPLOAD_BYTES,
   validateExtension,
 } from "../core/fileExtractor";
 import {
   getEstimateForTokens,
 } from "../tokens/service";
+import { validateProcessInput } from "../validation/processInput";
+import { parseMultipart } from "../utils/parseMultipart";
 
 type EstimateInput = {
   rawText: string;
@@ -38,26 +39,12 @@ export const calculateEstimate = ({
     };
   }
 
-  if (!Object.values(ServiceType).includes(serviceType)) {
+  const validation = validateProcessInput(serviceType, language);
+  if (!validation.ok) {
     return {
       ok: false as const,
       status: 400,
-      body: { error: "Invalid serviceType" },
-    };
-  }
-
-  const allowedLanguages: Language[] = [
-    "crnogorski",
-    "srpski",
-    "hrvatski",
-    "bosanski",
-  ];
-
-  if (!allowedLanguages.includes(language)) {
-    return {
-      ok: false as const,
-      status: 400,
-      body: { error: "Invalid language" },
+      body: { error: validation.error },
     };
   }
 
@@ -79,20 +66,6 @@ export const calculateEstimate = ({
     },
   }));
 };
-
-const parseMultipart = (req: Request) =>
-  new Promise<{ fields: formidable.Fields; files: formidable.Files }>(
-    (resolve, reject) => {
-      const form = formidable({ multiples: false, maxFileSize: MAX_UPLOAD_BYTES });
-      form.parse(req, (err: Error | null, fields: formidable.Fields, files: formidable.Files) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve({ fields, files });
-      });
-    }
-  );
 
 export const estimateHandler = async (req: Request, res: Response) => {
   const user = await requireExpressAuthUser(req, res);

@@ -5,6 +5,7 @@ import { createFullDiff } from "../../core/diff";
 import { JobStatus, Language, ServiceType } from "../../core/models";
 import { consumeTokensForProcessing } from "../../tokens/service";
 import { processRateLimit } from "../../middleware/rateLimit";
+import { validateProcessInput } from "../../validation/processInput";
 
 const MAX_INPUT_CHARS = 100_000;
 
@@ -37,19 +38,9 @@ export default async function handler(
     });
   }
 
-  if (!Object.values(ServiceType).includes(serviceType)) {
-    return res.status(400).json({ error: "Invalid serviceType" });
-  }
-
-  const allowedLanguages: Language[] = [
-    "crnogorski",
-    "srpski",
-    "hrvatski",
-    "bosanski",
-  ];
-
-  if (!allowedLanguages.includes(language)) {
-    return res.status(400).json({ error: "Invalid language" });
+  const validation = validateProcessInput(serviceType, language);
+  if (!validation.ok) {
+    return res.status(400).json({ error: validation.error });
   }
 
   const user = await requireNextAuthUser(req, res);
