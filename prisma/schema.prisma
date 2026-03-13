@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String          @id @default(cuid())
+  email            String          @unique
+  passwordHash     String?
+  tokenBalance     Int             @default(0)
+  stripeCustomerId String?         @unique
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  purchases        TokenPurchase[]
+  usages           TokenUsage[]
+}
+
+model ProcessedStripeEvent {
+  eventId   String   @id
+  createdAt DateTime @default(now())
+}
+
+model TokenPackage {
+  id            String          @id
+  tokenAmount   Int
+  priceEur      Decimal         @db.Decimal(10, 2)
+  stripePriceId String?
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  purchases     TokenPurchase[]
+}
+
+model TokenPurchase {
+  id                      String          @id @default(cuid())
+  userId                  String
+  tokenPackageId          String
+  stripeCheckoutSessionId String?         @unique
+  stripePaymentIntentId   String?
+  status                  PurchaseStatus  @default(PENDING)
+  tokensGranted           Int             @default(0)
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+  user                    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenPackage            TokenPackage    @relation(fields: [tokenPackageId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([tokenPackageId])
+}
+
+model TokenUsage {
+  id            String   @id @default(cuid())
+  userId        String
+  endpoint      String
+  charactersUsed Int
+  tokensDeducted Int
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum PurchaseStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
