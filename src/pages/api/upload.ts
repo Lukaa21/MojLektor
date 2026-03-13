@@ -143,6 +143,27 @@ export default async function handler(
       });
     }
 
+    let edited: string;
+    let cardCount: number;
+    try {
+      const result = await processText(
+        original,
+        serviceType,
+        textType,
+        language
+      );
+      edited = result.edited;
+      cardCount = result.cardCount;
+    } catch (aiError) {
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: "LLM_ERROR",
+          message: "Doslo je do greske prilikom AI obrade.",
+        },
+      });
+    }
+
     const tokenCheck = await consumeTokensForProcessing(
       user.id,
       original.length,
@@ -166,12 +187,6 @@ export default async function handler(
       });
     }
 
-    const { edited, cardCount } = await processText(
-      original,
-      serviceType,
-      textType,
-      language
-    );
     const fullDiff = createFullDiff(original, edited);
 
     return res.status(200).json({

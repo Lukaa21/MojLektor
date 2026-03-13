@@ -57,6 +57,27 @@ export default async function handler(
     return;
   }
 
+  let processedText: string;
+  let cardCount: number;
+  try {
+    const result = await processText(
+      rawText,
+      serviceType,
+      textType,
+      language
+    );
+    processedText = result.edited;
+    cardCount = result.cardCount;
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: "LLM_ERROR",
+        message: "Doslo je do greske prilikom AI obrade.",
+      },
+    });
+  }
+
   const tokenCheck = await consumeTokensForProcessing(
     user.id,
     rawText.length,
@@ -79,34 +100,17 @@ export default async function handler(
     });
   }
 
-  try {
-    const { edited: processedText, cardCount } = await processText(
-      rawText,
-      serviceType,
-      textType,
-      language
-    );
+  const fullDiff = createFullDiff(rawText, processedText);
 
-    const fullDiff = createFullDiff(rawText, processedText);
-
-    return res.json({
-      success: true,
-      original: fullDiff.original,
-      edited: fullDiff.edited,
-      diff: fullDiff.diff,
-      changes: fullDiff.changes,
-      tokens: fullDiff.tokens,
-      cardCount,
-      remainingBalance: tokenCheck.remainingBalance,
-      status: JobStatus.DONE,
-    });
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      error: {
-        code: "LLM_ERROR",
-        message: "Doslo je do greske prilikom AI obrade.",
-      },
-    });
-  }
+  return res.json({
+    success: true,
+    original: fullDiff.original,
+    edited: fullDiff.edited,
+    diff: fullDiff.diff,
+    changes: fullDiff.changes,
+    tokens: fullDiff.tokens,
+    cardCount,
+    remainingBalance: tokenCheck.remainingBalance,
+    status: JobStatus.DONE,
+  });
 }
