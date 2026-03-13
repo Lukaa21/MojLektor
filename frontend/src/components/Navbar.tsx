@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getCurrentUser, logoutUser } from "../lib/auth";
 import type { AuthUser, TokenBalanceResponse } from "../lib/api";
+import { useTokenBalance } from "../context/TokenBalanceContext";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -15,7 +16,7 @@ export const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [balance, setBalance] = useState<number | null>(null);
+  const { balance, setBalance } = useTokenBalance();
 
   useEffect(() => {
     const run = async () => {

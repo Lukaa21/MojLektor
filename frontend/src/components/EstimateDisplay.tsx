@@ -46,6 +46,14 @@ export const EstimateDisplay = ({
             {currentBalance}
           </span>
         </div>
+        {canProcess && (
+          <div className="flex items-center justify-between">
+            <span>Nakon obrade ostaće vam</span>
+            <span className="font-medium text-slate-900">
+              {currentBalance - requiredTokens} tokena
+            </span>
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-slate-200 pt-2">
           <span className="font-semibold text-slate-900">Status obrade</span>
           <span className="text-base font-semibold text-slate-900">

@@ -14,6 +14,7 @@ import {
 import { postJson } from "../lib/api";
 import { processCorrectionRequest } from "../lib/correctionRequest";
 import { getCurrentUser } from "../lib/auth";
+import { useTokenBalance } from "../context/TokenBalanceContext";
 import type { ServiceType } from "../core/models";
 import DiffDisplay from "../components/DiffDisplay";
 import { EstimateDisplay } from "../components/EstimateDisplay";
@@ -54,6 +55,7 @@ export default function Home() {
   const conflictMessage =
     "Možete odabrati ili unos teksta ili upload fajla.";
   const router = useRouter();
+  const { setBalance } = useTokenBalance();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [rawText, setRawText] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -187,6 +189,9 @@ export default function Home() {
       setReversibleChanges(data.changes ?? null);
       setReversibleTokens(data.tokens ?? null);
       setCardCount(data.cardCount);
+      if (typeof data.remainingBalance === "number") {
+        setBalance(data.remainingBalance);
+      }
       if (file && data.original) {
         setRawText(data.original);
       }

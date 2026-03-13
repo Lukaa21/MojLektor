@@ -41,6 +41,7 @@ export type ProcessResponse = {
   changes: ReversibleChange[];
   tokens: ReversibleToken[];
   cardCount: number;
+  remainingBalance?: number;
   status: "DONE";
 };
 
