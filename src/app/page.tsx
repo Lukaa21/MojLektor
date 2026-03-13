@@ -2,7 +2,9 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
+  ApiError,
   type EstimateResponse,
   type ProcessResponse,
   type Language,
@@ -11,6 +13,7 @@ import {
 } from "../lib/api";
 import { postJson } from "../lib/api";
 import { processCorrectionRequest } from "../lib/correctionRequest";
+import { getCurrentUser } from "../lib/auth";
 import type { ServiceType } from "../../../src/core/models";
 import DiffDisplay from "../components/DiffDisplay";
 import { EstimateDisplay } from "../components/EstimateDisplay";
@@ -20,8 +23,6 @@ import { Loader } from "../components/Loader";
 import { ResultDisplay } from "../components/ResultDisplay";
 import { SelectInput } from "../components/SelectInput";
 import { TextInput } from "../components/TextInput";
-import { MAX_CARD_CHARS } from "../../../src/core/segmenter";
-import { calculatePrice } from "../../../src/core/pricing";
 
 const serviceOptions = [
   { value: "LEKTURA", label: "Lektura" },
@@ -52,6 +53,7 @@ const VALIDATION_LANGUAGE = "Odaberite jezik.";
 export default function Home() {
   const conflictMessage =
     "Možete odabrati ili unos teksta ili upload fajla.";
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [rawText, setRawText] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -68,78 +70,11 @@ export default function Home() {
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isEstimating, setIsEstimating] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [inputConflictWarning, setInputConflictWarning] = useState<string | null>(null);
 
   const trimmedText = useMemo(() => rawText.trim(), [rawText]);
-
-  const liveEstimate = useMemo(() => {
-    if (!rawText.length) {
-      return null;
-    }
-
-    const cardCount = Math.ceil(rawText.length / MAX_CARD_CHARS);
-    const pricing = calculatePrice(serviceType, cardCount);
-    const lastCardChars = rawText.length % MAX_CARD_CHARS || MAX_CARD_CHARS;
-
-    return {
-      cardCount,
-      perCard: pricing.perCard,
-      subtotal: pricing.subtotal,
-      totalPrice: pricing.total,
-      lastCardChars,
-    };
-  }, [rawText, serviceType]);
-
-  const estimateHintMessage = useMemo(() => {
-    if (!liveEstimate) {
-      return null;
-    }
-
-    if (rawText.length < 401) {
-      return null;
-    }
-
-    const lastCardChars = liveEstimate.lastCardChars;
-
-    if (lastCardChars === MAX_CARD_CHARS) {
-      return null;
-    }
-
-    if (lastCardChars <= 400) {
-      const charsToRemove = lastCardChars;
-      const reducedCardCount = Math.max(liveEstimate.cardCount - 1, 0);
-      const reducedPrice = calculatePrice(serviceType, reducedCardCount).total;
-      if (process.env.NODE_ENV !== "production") {
-        console.info("[estimate-debug]", {
-          rawTextLength: rawText.length,
-          cardCount: liveEstimate.cardCount,
-          lastCardChars,
-          charsToRemove,
-          reducedCardCount,
-          reducedPrice,
-          mode: "remove",
-        });
-      }
-      return `Ako uklonite još ${charsToRemove} karakter/a, cijena će biti ${reducedPrice.toFixed(2)} EUR.`;
-    }
-
-    if (lastCardChars > 401) {
-      const addableChars = MAX_CARD_CHARS - lastCardChars;
-      if (process.env.NODE_ENV !== "production") {
-        console.info("[estimate-debug]", {
-          rawTextLength: rawText.length,
-          cardCount: liveEstimate.cardCount,
-          lastCardChars,
-          addableChars,
-          mode: "add",
-        });
-      }
-      return `Za istu cijenu možete dodati još ${addableChars} karakter/a.`;
-    }
-
-    return null;
-  }, [liveEstimate, rawText.length, serviceType]);
 
   const validateInput = () => {
     if (!trimmedText && !file) {
@@ -180,6 +115,22 @@ export default function Home() {
       return prev;
     });
   };
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (!user) {
+          router.push("/login?next=/");
+          return;
+        }
+      } finally {
+        setIsAuthChecking(false);
+      }
+    };
+
+    void verifyAuth();
+  }, [router]);
 
   useEffect(() => {
     if (!trimmedText && !file) {
@@ -227,7 +178,7 @@ export default function Home() {
             rawText: trimmedText,
             serviceType,
             textType,
-            language,
+            language: language as Language,
           });
 
       setOriginalText(data.original);
@@ -240,6 +191,17 @@ export default function Home() {
         setRawText(data.original);
       }
     } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        router.push("/login?next=/");
+        return;
+      }
+
+      if (err instanceof ApiError && err.status === 402) {
+        const requiredTokens = typeof err.details?.requiredTokens === "number"
+          ? err.details.requiredTokens
+          : trimmedText.length;
+        router.push(`/buy-tokens?requiredTokens=${requiredTokens}`);
+      }
       const message = err instanceof Error ? err.message : "Greška u obradi.";
       setError(message);
     } finally {
@@ -303,6 +265,11 @@ export default function Home() {
       }
       setEstimate(data);
     } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        router.push("/login?next=/");
+        return;
+      }
+
       const message = err instanceof Error ? err.message : "Greška u procjeni.";
       setError(message);
     } finally {
@@ -311,6 +278,16 @@ export default function Home() {
   };
 
   const isBusy = isProcessing || isEstimating;
+
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-[color:var(--background)]">
+        <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-10 sm:px-8 lg:px-12">
+          <Loader label="Provjera prijave..." />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[color:var(--background)]">
@@ -443,19 +420,20 @@ export default function Home() {
                 disabled={isBusy}
                 className="w-full cursor-pointer rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Procijeni cijenu
+                Procijeni tokene
               </button>
             </div>
           </div>
         </motion.section>
 
-        {estimate && liveEstimate ? (
+        {estimate ? (
           <EstimateDisplay
-            cardCount={liveEstimate.cardCount}
-            perCard={liveEstimate.perCard}
-            subtotal={liveEstimate.subtotal}
-            totalPrice={liveEstimate.totalPrice}
-            hintMessage={estimateHintMessage}
+            requiredTokens={estimate.requiredTokens}
+            currentBalance={estimate.currentBalance}
+            canProcess={estimate.canProcess}
+            suggestedPackage={estimate.suggestedPackage}
+            nextLowerPackage={estimate.nextLowerPackage}
+            differenceToLowerPackage={estimate.differenceToLowerPackage}
           />
         ) : null}
         {diffOps ? (
@@ -497,11 +475,22 @@ const submitUploadedFile = async (
     | { error?: { code?: string; message?: string } };
 
   if (!response.ok) {
+    const errorPayload =
+      typeof payload === "object" && payload !== null && "error" in payload
+        ? payload.error
+        : undefined;
+
     const message =
-      "error" in payload && payload.error?.message
-        ? payload.error.message
+      errorPayload?.message
+        ? errorPayload.message
         : "Neuspješan upload.";
-    throw new Error(message);
+
+    throw new ApiError(
+      message,
+      response.status,
+      errorPayload?.code,
+      payload as unknown as Record<string, unknown>
+    );
   }
 
   return payload as ProcessResponse;
@@ -535,7 +524,12 @@ const submitEstimateFromUploadedFile = async (
           ? payload.error
           : payload.error?.message || "Neuspješna procjena fajla."
         : "Neuspješna procjena fajla.";
-    throw new Error(message);
+    throw new ApiError(
+      message,
+      response.status,
+      undefined,
+      payload as unknown as Record<string, unknown>
+    );
   }
 
   return payload as EstimateResponse;

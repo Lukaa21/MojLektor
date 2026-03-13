@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getCurrentUser, logoutUser } from "../lib/auth";
+import type { AuthUser, TokenBalanceResponse } from "../lib/api";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -10,6 +13,47 @@ const navLinks = [
 
 export const Navbar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const me = await getCurrentUser();
+        setUser(me);
+
+        if (!me) {
+          setBalance(null);
+          return;
+        }
+
+        const response = await fetch("/api/tokens/balance", {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const payload = (await response.json()) as TokenBalanceResponse;
+          setBalance(payload.balance);
+          return;
+        }
+
+        setBalance(me.tokenBalance);
+      } catch {
+        setUser(null);
+        setBalance(null);
+      }
+    };
+
+    void run();
+  }, [pathname]);
+
+  const handleLogout = async () => {
+    await logoutUser();
+    setUser(null);
+    setBalance(null);
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
     <header className="border-b border-slate-200/80 bg-white/85 backdrop-blur">
@@ -41,6 +85,64 @@ export const Navbar = () => {
               </li>
             );
           })}
+
+          {user ? (
+            <>
+              <li>
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700">
+                  Tokeni: {balance ?? user.tokenBalance}
+                </span>
+              </li>
+              <li>
+                <Link
+                  href="/buy-tokens"
+                  className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
+                    pathname === "/buy-tokens"
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
+                  }`}
+                >
+                  Buy Tokens
+                </Link>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
+                >
+                  Logout
+                </button>
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <Link
+                  href="/login"
+                  className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
+                    pathname === "/login"
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
+                  }`}
+                >
+                  Login
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/register"
+                  className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
+                    pathname === "/register"
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
+                  }`}
+                >
+                  Register
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
       </nav>
     </header>
