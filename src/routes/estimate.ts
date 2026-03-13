@@ -13,6 +13,7 @@ import {
 } from "../tokens/service";
 import { validateProcessInput } from "../validation/processInput";
 import { parseMultipart } from "../utils/parseMultipart";
+import { calculateTokenCost } from "../core/tokenCost";
 
 type EstimateInput = {
   rawText: string;
@@ -60,7 +61,7 @@ export const calculateEstimate = ({
     };
   }
 
-  return getEstimateForTokens(userId, rawText.length).then((estimate) => ({
+  return getEstimateForTokens(userId, calculateTokenCost(rawText.length, serviceType)).then((estimate) => ({
     ok: true as const,
     status: 200,
     body: {

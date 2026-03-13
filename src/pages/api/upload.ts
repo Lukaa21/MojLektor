@@ -16,6 +16,7 @@ import {
 import { processRateLimit } from "../../middleware/rateLimit";
 import { validateProcessInput } from "../../validation/processInput";
 import { parseMultipart } from "../../utils/parseMultipart";
+import { calculateTokenCost } from "../../core/tokenCost";
 
 export const config = {
   api: {
@@ -137,7 +138,7 @@ export default async function handler(
 
     const tokenCheck = await consumeTokensForProcessing(
       user.id,
-      original.length,
+      calculateTokenCost(original.length, serviceType),
       "/api/upload"
     );
 

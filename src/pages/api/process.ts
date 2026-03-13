@@ -6,6 +6,7 @@ import { JobStatus, Language, ServiceType } from "../../core/models";
 import { consumeTokensForProcessing } from "../../tokens/service";
 import { processRateLimit } from "../../middleware/rateLimit";
 import { validateProcessInput } from "../../validation/processInput";
+import { calculateTokenCost } from "../../core/tokenCost";
 
 const MAX_INPUT_CHARS = 100_000;
 
@@ -71,7 +72,7 @@ export default async function handler(
 
   const tokenCheck = await consumeTokensForProcessing(
     user.id,
-    rawText.length,
+    calculateTokenCost(rawText.length, serviceType),
     "/api/process"
   );
 
