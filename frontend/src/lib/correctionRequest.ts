@@ -8,8 +8,8 @@ import {
 } from "./api";
 import { demoTexts, type DemoTextTypeKey } from "../data/demoTexts";
 import { demoOutputs } from "../data/demoOutputs";
-import { createFullDiff } from "../../../src/core/diff";
-import { MAX_CARD_CHARS } from "../../../src/core/segmenter";
+import { createFullDiff } from "../core/diff";
+import { MAX_CARD_CHARS } from "../core/segmenter";
 
 export type CorrectionRequestInput = {
   rawText: string;

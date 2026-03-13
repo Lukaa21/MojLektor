@@ -14,7 +14,7 @@ import {
 import { postJson } from "../lib/api";
 import { processCorrectionRequest } from "../lib/correctionRequest";
 import { getCurrentUser } from "../lib/auth";
-import type { ServiceType } from "../../../src/core/models";
+import type { ServiceType } from "../../core/models";
 import DiffDisplay from "../components/DiffDisplay";
 import { EstimateDisplay } from "../components/EstimateDisplay";
 import { ErrorMessage } from "../components/Error";

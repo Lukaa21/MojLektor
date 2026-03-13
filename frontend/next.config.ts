@@ -5,11 +5,13 @@ const processBaseUrl =
   process.env.NEXT_PUBLIC_PROCESS_API_BASE_URL || estimateBaseUrl;
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: __dirname,
+  },
   async rewrites() {
     if (!estimateBaseUrl && !processBaseUrl) {
       return [];
     }
-
     const rewrites = [] as Array<{ source: string; destination: string }>;
     if (processBaseUrl) {
       const target = processBaseUrl.replace(/\/$/, "");

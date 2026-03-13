@@ -1,6 +1,6 @@
 import type { ReversibleChange } from "../lib/api";
 import { demoTexts } from "./demoTexts";
-import { createFullDiff } from "../../../src/core/diff";
+import { createFullDiff } from "../core/diff";
 
 type DemoOutputEntry = {
   correctedText: string;
