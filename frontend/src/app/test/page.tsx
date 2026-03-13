@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
-import type { ServiceType } from "../../../core/models";
+import type { ServiceType } from "../../core/models";
 import DiffDisplay from "../../components/DiffDisplay";
 import { ErrorMessage } from "../../components/Error";
 import { Header } from "../../components/Header";
