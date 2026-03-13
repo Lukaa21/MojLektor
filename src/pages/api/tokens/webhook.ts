@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
+import stripe from "../../../stripe/client";
 import { applyCompletedCheckoutEvent } from "../../../tokens/service";
 
 export const config = {
@@ -8,14 +9,7 @@ export const config = {
   },
 };
 
-const stripeSecret = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET;
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-const stripe = stripeSecret
-  ? new Stripe(stripeSecret, {
-      apiVersion: "2025-08-27.basil",
-    })
-  : null;
 
 const readRawBody = async (req: NextApiRequest) => {
   const chunks: Buffer[] = [];
@@ -33,7 +27,7 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!stripe || !webhookSecret) {
+  if (!webhookSecret) {
     return res.status(500).json({ error: "Stripe webhook nije konfigurisan." });
   }
 

@@ -1,17 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import Stripe from "stripe";
+import stripe from "../../../stripe/client";
 import { requireNextAuthUser } from "../../../auth/guards";
 import { getPackageById } from "../../../tokens/service";
 import { checkoutRateLimit } from "../../../middleware/rateLimit";
 
-const stripeSecret = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET;
 const appUrl = process.env.APP_URL || "http://localhost:3000";
-
-const stripe = stripeSecret
-  ? new Stripe(stripeSecret, {
-      apiVersion: "2025-08-27.basil",
-    })
-  : null;
 
 export default async function handler(
   req: NextApiRequest,
@@ -22,10 +15,6 @@ export default async function handler(
   }
 
   if (!(await checkoutRateLimit(req, res))) return;
-
-  if (!stripe) {
-    return res.status(500).json({ error: "Stripe nije konfigurisan." });
-  }
 
   const { packageId } = req.body as { packageId?: string };
   if (!packageId) {
@@ -61,7 +50,7 @@ export default async function handler(
       metadata: {
         userId: user.id,
       },
-      success_url: `${appUrl}/buy-tokens?success=1`,
+      success_url: `${appUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/buy-tokens?canceled=1`,
     });
 

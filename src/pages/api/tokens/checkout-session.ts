@@ -1,14 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import Stripe from "stripe";
+import stripe from "../../../stripe/client";
 import { requireNextAuthUser } from "../../../auth/guards";
-
-const stripeSecret = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET;
-
-const stripe = stripeSecret
-  ? new Stripe(stripeSecret, {
-      apiVersion: "2025-08-27.basil",
-    })
-  : null;
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,10 +8,6 @@ export default async function handler(
 ) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  if (!stripe) {
-    return res.status(500).json({ error: "Stripe nije konfigurisan." });
   }
 
   const user = await requireNextAuthUser(req, res);

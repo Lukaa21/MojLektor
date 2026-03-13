@@ -14,10 +14,6 @@ const nextConfig: NextConfig = {
     if (processBaseUrl) {
       const target = processBaseUrl.replace(/\/$/, "");
       rewrites.push({
-        source: "/api/checkout_sessions",
-        destination: `${target}/api/checkout_sessions`,
-      });
-      rewrites.push({
         source: "/api/auth/:path*",
         destination: `${target}/api/auth/:path*`,
       });

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import jwt from "jsonwebtoken";
 
 type RateLimitConfig = {
   windowMs: number;
@@ -73,10 +74,17 @@ export const processRateLimit = createRateLimit("process", {
   windowMs: 60_000,
   maxRequests: 5,
   keyFn: (req) => {
-    // Key by user cookie if available, otherwise by IP
     const cookie = req.headers?.cookie ?? "";
     const match = cookie.match(/ml_session=([^;]+)/);
-    return match ? match[1].slice(0, 40) : getClientIp(req);
+    if (match) {
+      try {
+        const decoded = jwt.verify(match[1], process.env.AUTH_JWT_SECRET!) as { sub: string };
+        return decoded.sub;
+      } catch {
+        return getClientIp(req);
+      }
+    }
+    return getClientIp(req);
   },
 });
 
