@@ -22,6 +22,8 @@ type EstimateInput = {
   userId: string;
 };
 
+const MAX_INPUT_CHARS = 100_000;
+
 export const calculateEstimate = ({
   rawText,
   serviceType,
@@ -45,6 +47,16 @@ export const calculateEstimate = ({
       ok: false as const,
       status: 400,
       body: { error: validation.error },
+    };
+  }
+
+  if (rawText.length > MAX_INPUT_CHARS) {
+    return {
+      ok: false as const,
+      status: 400,
+      body: {
+        error: `Input too large. Maximum ${MAX_INPUT_CHARS} characters allowed.`,
+      },
     };
   }
 

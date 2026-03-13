@@ -4,7 +4,10 @@ import { requireNextAuthUser } from "../../../auth/guards";
 import { getPackageById } from "../../../tokens/service";
 import { checkoutRateLimit } from "../../../middleware/rateLimit";
 
-const appUrl = process.env.APP_URL || "http://localhost:3000";
+const appUrl = process.env.APP_URL;
+if (!appUrl) {
+  throw new Error("APP_URL environment variable must be set");
+}
 
 export default async function handler(
   req: NextApiRequest,

@@ -92,3 +92,21 @@ export const checkoutRateLimit = createRateLimit("checkout", {
   windowMs: 60_000,
   maxRequests: 20,
 });
+
+export const generalRateLimit = createRateLimit("general", {
+  windowMs: 60_000,
+  maxRequests: 60,
+  keyFn: (req) => {
+    const cookie = req.headers?.cookie ?? "";
+    const match = cookie.match(/ml_session=([^;]+)/);
+    if (match) {
+      try {
+        const decoded = jwt.verify(match[1], process.env.AUTH_JWT_SECRET!) as { sub: string };
+        return decoded.sub;
+      } catch {
+        return getClientIp(req);
+      }
+    }
+    return getClientIp(req);
+  },
+});

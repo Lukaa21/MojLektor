@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireNextAuthUser } from "../../../auth/guards";
+import { generalRateLimit } from "../../../middleware/rateLimit";
 
 export default async function handler(
   req: NextApiRequest,
@@ -8,6 +9,8 @@ export default async function handler(
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
+
+  if (!(await generalRateLimit(req, res))) return;
 
   const user = await requireNextAuthUser(req, res);
   if (!user) {

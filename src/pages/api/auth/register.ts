@@ -40,7 +40,7 @@ export default async function handler(
 
   const existing = await findUserByEmail(email);
   if (existing) {
-    return res.status(409).json({ error: "Korisnik već postoji." });
+    return res.status(409).json({ error: "Registracija nije uspjela. Pokušajte ponovo." });
   }
 
   const passwordHash = await hashPassword(password);
