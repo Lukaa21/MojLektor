@@ -15,5 +15,9 @@ export default async function handler(
     return;
   }
 
-  return res.status(200).json({ packages: getTokenPackages() });
+  const packages = getTokenPackages().map(
+    ({ stripePriceId, ...rest }) => rest
+  );
+
+  return res.status(200).json({ packages });
 }
