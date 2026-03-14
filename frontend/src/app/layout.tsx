@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Manrope } from "next/font/google";
+import { Plus_Jakarta_Sans, Newsreader } from "next/font/google";
 import Navbar from "../components/Navbar";
 import { TokenBalanceProvider } from "../context/TokenBalanceContext";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
+  style: ["normal", "italic"],
   weight: ["400", "500"],
   display: "swap",
 });
@@ -30,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${manrope.variable} ${plexMono.variable} antialiased`}
+        className={`${jakarta.variable} ${newsreader.variable} antialiased`}
       >
         <TokenBalanceProvider>
           <div className="min-h-screen">

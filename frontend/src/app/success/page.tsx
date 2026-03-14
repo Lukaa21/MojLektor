@@ -72,33 +72,58 @@ export default function SuccessPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-[color:var(--background)]">
-      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-10 sm:px-8 lg:px-12">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold text-slate-900">Status plaćanja</h1>
-          <p className="mt-3 text-sm text-slate-700">{message}</p>
+    <div
+      className="container"
+      style={{
+        paddingTop: 100,
+        paddingBottom: 80,
+        textAlign: "center",
+        maxWidth: 500,
+      }}
+    >
+      {state === "success" && (
+        <div
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: "50%",
+            background: "var(--success-bg)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 24px",
+            fontSize: 28,
+            color: "var(--success)",
+          }}
+        >
+          ✓
+        </div>
+      )}
+      <h2
+        style={{
+          fontFamily: "var(--font-serif)",
+          fontSize: 32,
+          fontWeight: 400,
+          marginBottom: 12,
+        }}
+      >
+        Status plaćanja
+      </h2>
+      <p style={{ color: "var(--text-muted)", fontSize: 15, marginBottom: 32 }}>
+        {message}
+      </p>
 
-          <div className="mt-5 flex gap-3">
-            {state === "success" ? (
-              <Link
-                href="/buy-tokens?success=1"
-                className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-              >
-                Nazad na tokene
-              </Link>
-            ) : null}
+      {state === "success" && (
+        <Link href="/buy-tokens?success=1" className="btn-primary">
+          Nazad na tokene
+        </Link>
+      )}
 
-            {state === "open" || state === "error" ? (
-              <Link
-                href="/buy-tokens"
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-              >
-                Povratak
-              </Link>
-            ) : null}
-          </div>
-        </section>
-      </main>
+      {(state === "open" || state === "error") && (
+        <Link href="/buy-tokens" className="btn-secondary">
+          Povratak
+        </Link>
+      )}
     </div>
   );
 }

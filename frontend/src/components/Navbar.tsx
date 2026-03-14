@@ -57,94 +57,135 @@ export const Navbar = () => {
   };
 
   return (
-    <header className="border-b border-slate-200/80 bg-white/85 backdrop-blur">
-      <nav className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-8 lg:px-12">
+    <header
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+        background: "rgba(253,252,251,0.92)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid var(--border-light)",
+        height: 72,
+      }}
+    >
+      <nav
+        style={{
+          maxWidth: 960,
+          margin: "0 auto",
+          padding: "0 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: "100%",
+        }}
+      >
+        {/* Logo */}
         <Link
           href="/"
-          className="text-sm font-semibold tracking-[0.12em] text-slate-900 uppercase"
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontStyle: "italic",
+            fontSize: 22,
+            fontWeight: 400,
+            color: "var(--text-main)",
+            textDecoration: "none",
+            letterSpacing: "-0.02em",
+          }}
         >
           MojLektor
         </Link>
 
-        <ul className="flex flex-wrap items-center gap-2">
+        {/* Center nav links */}
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
-
             return (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
-                    isActive
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
-                  }`}
-                  aria-current={isActive ? "page" : undefined}
-                >
-                  {link.name}
-                </Link>
-              </li>
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: isActive ? "var(--text-main)" : "var(--text-muted)",
+                  textDecoration: "none",
+                  borderBottom: isActive
+                    ? "2px solid var(--accent)"
+                    : "2px solid transparent",
+                  paddingBottom: 2,
+                  transition: "color 0.2s, border-color 0.2s",
+                }}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {link.name}
+              </Link>
             );
           })}
+        </div>
 
+        {/* Right side */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           {user ? (
             <>
-              <li>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700">
-                  Tokeni: {balance ?? user.tokenBalance}
-                </span>
-              </li>
-              <li>
-                <Link
-                  href="/buy-tokens"
-                  className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
-                    pathname === "/buy-tokens"
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
-                  }`}
-                >
-                  Buy Tokens
-                </Link>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
-                >
-                  Logout
-                </button>
-              </li>
+              <Link
+                href="/buy-tokens"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "var(--accent-soft)",
+                  color: "var(--accent)",
+                  padding: "6px 14px",
+                  borderRadius: 99,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  transition: "background 0.2s",
+                }}
+              >
+                <span>🪙</span>
+                <span>{balance ?? user.tokenBalance} tokena</span>
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "var(--text-muted)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  transition: "color 0.2s",
+                }}
+              >
+                Odjavi se
+              </button>
             </>
           ) : (
             <>
-              <li>
-                <Link
-                  href="/login"
-                  className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
-                    pathname === "/login"
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
-                  }`}
-                >
-                  Login
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/register"
-                  className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
-                    pathname === "/register"
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
-                  }`}
-                >
-                  Register
-                </Link>
-              </li>
+              <Link
+                href="/login"
+                style={{
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "var(--text-muted)",
+                  textDecoration: "none",
+                  transition: "color 0.2s",
+                }}
+              >
+                Prijava
+              </Link>
+              <Link
+                href="/register"
+                className="btn-primary"
+                style={{ padding: "8px 20px", fontSize: 13 }}
+              >
+                Registracija
+              </Link>
             </>
           )}
-        </ul>
+        </div>
       </nav>
     </header>
   );

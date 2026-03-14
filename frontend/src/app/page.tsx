@@ -19,32 +19,27 @@ import type { ServiceType } from "../core/models";
 import DiffDisplay from "../components/DiffDisplay";
 import { EstimateDisplay } from "../components/EstimateDisplay";
 import { ErrorMessage } from "../components/Error";
-import { Header } from "../components/Header";
 import { Loader } from "../components/Loader";
 import { ResultDisplay } from "../components/ResultDisplay";
-import { SelectInput } from "../components/SelectInput";
-import { TextInput } from "../components/TextInput";
 
-const serviceOptions = [
-  { value: "LEKTURA", label: "Lektura" },
-  { value: "KOREKTURA", label: "Korektura" },
-  { value: "BOTH", label: "Lektura + Korektura" },
+const serviceCards: { value: ServiceType; icon: string; label: string; desc: string }[] = [
+  { value: "LEKTURA" as ServiceType, icon: "✎", label: "Lektura", desc: "Stilska i jezička dorađenost" },
+  { value: "KOREKTURA" as ServiceType, icon: "✦", label: "Korektura", desc: "Pravopis, interpunkcija, greške" },
+  { value: "BOTH" as ServiceType, icon: "✯", label: "Kombinovano", desc: "Sve u jednom prolazu" },
 ];
 
-const textTypeOptions = [
-  { value: "", label: "Odaberite vrstu teksta", disabled: true },
-  { value: "akademski rad", label: "Akademski rad" },
-  { value: "clanak", label: "Članak" },
-  { value: "zvanicni dokument", label: "Zvanični dokument" },
-  { value: "knjiga", label: "Knjiga / rukopis" },
-];
-
-const languageOptions = [
-  { value: "", label: "Odaberite jezik", disabled: true },
+const languageChips: { value: Language; label: string }[] = [
   { value: "crnogorski", label: "Crnogorski" },
   { value: "srpski", label: "Srpski" },
   { value: "hrvatski", label: "Hrvatski" },
   { value: "bosanski", label: "Bosanski" },
+];
+
+const textTypeChips = [
+  { value: "akademski rad", label: "Akademski" },
+  { value: "clanak", label: "Novinarski" },
+  { value: "knjiga", label: "Književni" },
+  { value: "zvanicni dokument", label: "Poslovni" },
 ];
 
 const VALIDATION_EMPTY_TEXT = "Unesite tekst prije slanja.";
@@ -286,175 +281,274 @@ export default function Home() {
 
   if (isAuthChecking) {
     return (
-      <div className="min-h-screen bg-[color:var(--background)]">
-        <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-10 sm:px-8 lg:px-12">
-          <Loader label="Provjera prijave..." />
-        </main>
+      <div className="container" style={{ paddingTop: 80, textAlign: "center" }}>
+        <Loader label="Provjera prijave..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[color:var(--background)]">
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-10 sm:px-8 lg:px-12">
-        <Header
-          title="MojLektor"
-          subtitle="Automatizovana lektura i korektura za tekstove sa balkanskog govornog područja. Fokus na čitljivosti, jasnoći i urednom akademskom stilu."
-        />
-
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:grid-cols-[2fr_1fr]"
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="container"
+      style={{ paddingTop: 60, paddingBottom: 80 }}
+    >
+      {/* Section 1 — Intro */}
+      <section style={{ textAlign: "center", marginBottom: "var(--section-gap)" }}>
+        <h1
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: 42,
+            fontWeight: 400,
+            lineHeight: 1.2,
+            marginBottom: 32,
+          }}
         >
-          <div className="flex flex-col gap-5">
-            <TextInput
-              id="rawText"
-              label="Tekst za obradu"
-              value={rawText}
-              onChange={(value) => {
-                if (file) {
-                  setFile(null);
-                  setFileError(null);
-                  setInputConflictWarning(null);
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = "";
-                  }
-                }
-
-                setRawText(value);
-                if (value.trim()) {
-                  clearValidationAlertIfResolved("text-source");
-                }
-              }}
-              placeholder="Zalijepite tekst koji želite da obradite..."
-            />
-            <div className="flex flex-col gap-2">
-              <label htmlFor="uploadFile" className="text-sm font-medium text-slate-700">
-                Ili upload fajl (.txt, .pdf, .docx)
-              </label>
-              <div className="relative flex items-center gap-2">
-                <input
-                  ref={fileInputRef}
-                  id="uploadFile"
-                  type="file"
-                  aria-label="Upload fajla"
-                  accept=".txt,.pdf,.docx"
-                  onChange={(event) => {
-                    const selected = event.target.files?.[0] ?? null;
-                    handleFileChange(selected);
+          Vratite snagu svojim riječima.
+        </h1>
+        <div style={{ display: "flex", justifyContent: "center", gap: 32 }}>
+          {["Podrška za 4 jezika", "Reverzibilne izmjene", "Trenutna AI obrada"].map(
+            (feature) => (
+              <span
+                key={feature}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 14,
+                  color: "var(--text-muted)",
+                }}
+              >
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 20,
+                    height: 20,
+                    borderRadius: "50%",
+                    background: "var(--success-bg)",
+                    color: "var(--success)",
+                    fontSize: 10,
+                    fontWeight: 700,
                   }}
-                  disabled={!!trimmedText}
-                  className="block w-full cursor-pointer text-sm text-slate-700 file:mr-3 file:cursor-pointer file:rounded-full file:border file:border-slate-200 file:bg-white file:px-4 file:py-2 file:text-xs file:font-medium disabled:cursor-not-allowed"
-                />
-                {trimmedText ? (
-                  <button
-                    type="button"
-                    aria-label="Upozorenje: aktivan je unos teksta"
-                    onClick={() => setInputConflictWarning(conflictMessage)}
-                    className="absolute left-0 right-9 top-0 h-full cursor-pointer rounded-full bg-transparent"
-                  />
-                ) : null}
-                {file ? (
-                  <button
-                    type="button"
-                    aria-label="Ukloni fajl"
-                    onClick={clearUploadedFile}
-                    className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-sm text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-                  >
-                    x
-                  </button>
-                ) : null}
-              </div>
-              {fileError ? <p className="text-xs text-red-600">{fileError}</p> : null}
-              {inputConflictWarning ? (
-                <div className="flex items-start gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
-                  <span>{inputConflictWarning}</span>
-                </div>
-              ) : null}
-            </div>
-            {error ? <ErrorMessage message={error} /> : null}
-            {isProcessing ? <Loader label="Obrada u toku..." /> : null}
-            {isEstimating ? <Loader label="Procjena u toku..." /> : null}
-          </div>
+                >
+                  ✓
+                </span>
+                {feature}
+              </span>
+            )
+          )}
+        </div>
+      </section>
 
-          <div className="flex flex-col gap-5">
-            <SelectInput
-              id="serviceType"
-              label="Usluga"
-              value={serviceType}
-              options={serviceOptions}
-              onChange={(value) => setServiceType(value as ServiceType)}
-            />
-            <SelectInput
-              id="textType"
-              label="Vrsta teksta"
-              value={textType}
-              options={textTypeOptions}
-              onChange={(value) => {
-                setTextType(value);
-                if (value) {
-                  clearValidationAlertIfResolved("textType");
-                }
-              }}
-            />
-            <SelectInput
-              id="language"
-              label="Jezik"
-              value={language}
-              options={languageOptions}
-              onChange={(value) => {
-                setLanguage(value as Language);
-                if (value) {
+      {/* Section 2 — Service type selector */}
+      <section style={{ marginBottom: 32 }}>
+        <div className="selector-label">Vrsta usluge</div>
+        <div className="service-grid">
+          {serviceCards.map((card) => (
+            <button
+              key={card.value}
+              type="button"
+              className={`service-card${serviceType === card.value ? " active" : ""}`}
+              onClick={() => setServiceType(card.value)}
+            >
+              <span className="service-icon">{card.icon}</span>
+              <h3>{card.label}</h3>
+              <p>{card.desc}</p>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Section 3 — Chip selectors */}
+      <section style={{ display: "flex", gap: 40, marginBottom: 32, flexWrap: "wrap" }}>
+        <div>
+          <div className="selector-label">Varijanta jezika</div>
+          <div className="chip-group">
+            {languageChips.map((chip) => (
+              <button
+                key={chip.value}
+                type="button"
+                className={`chip${language === chip.value ? " active" : ""}`}
+                onClick={() => {
+                  setLanguage(chip.value);
                   clearValidationAlertIfResolved("language");
-                }
-              }}
-            />
-            <div className="mt-auto grid gap-3">
-              <button
-                type="button"
-                onClick={handleProcess}
-                disabled={isBusy}
-                className="w-full cursor-pointer rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                }}
               >
-                Pošalji na obradu
+                {chip.label}
               </button>
-              <button
-                type="button"
-                onClick={handleEstimate}
-                disabled={isBusy}
-                className="w-full cursor-pointer rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Procijeni tokene
-              </button>
-            </div>
+            ))}
           </div>
-        </motion.section>
+        </div>
+        <div>
+          <div className="selector-label">Tip teksta</div>
+          <div className="chip-group">
+            {textTypeChips.map((chip) => (
+              <button
+                key={chip.value}
+                type="button"
+                className={`chip${textType === chip.value ? " active" : ""}`}
+                onClick={() => {
+                  setTextType(chip.value);
+                  clearValidationAlertIfResolved("textType");
+                }}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
 
-        {estimate ? (
-          <EstimateDisplay
-            requiredTokens={estimate.requiredTokens}
-            currentBalance={estimate.currentBalance}
-            canProcess={estimate.canProcess}
-            suggestedPackage={estimate.suggestedPackage}
-            nextLowerPackage={estimate.nextLowerPackage}
-            differenceToLowerPackage={estimate.differenceToLowerPackage}
+      {/* Section 4 — Editor */}
+      <section style={{ marginBottom: 32 }}>
+        <div className="editor-container">
+          <textarea
+            value={rawText}
+            onChange={(e) => {
+              if (file) {
+                setFile(null);
+                setFileError(null);
+                setInputConflictWarning(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
+              }
+              setRawText(e.target.value);
+              if (e.target.value.trim()) {
+                clearValidationAlertIfResolved("text-source");
+              }
+            }}
+            placeholder="Unesite ili nalijepite vaš tekst ovdje..."
           />
-        ) : null}
-        {diffOps ? (
-          <DiffDisplay
-            original={originalText}
-            edited={processedText}
-            diff={diffOps as ProcessResponse["diff"]}
-            changes={reversibleChanges ?? []}
-            tokens={reversibleTokens ?? []}
-            cardCount={cardCount}
-          />
-        ) : processedText ? (
-          <ResultDisplay processedText={processedText} cardCount={cardCount} />
-        ) : null}
-      </main>
-    </div>
+          <div
+            className="upload-zone"
+            onClick={() => {
+              if (trimmedText) {
+                setInputConflictWarning(conflictMessage);
+                return;
+              }
+              fileInputRef.current?.click();
+            }}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".txt,.pdf,.docx"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const selected = e.target.files?.[0] ?? null;
+                handleFileChange(selected);
+              }}
+              disabled={!!trimmedText}
+            />
+            {file ? (
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                📎 {file.name}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearUploadedFile();
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--text-muted)",
+                    fontSize: 16,
+                  }}
+                >
+                  ✕
+                </button>
+              </span>
+            ) : (
+              <span>📎 Priložite dokument (.docx, .pdf ili .txt)</span>
+            )}
+          </div>
+        </div>
+        {fileError && (
+          <p style={{ color: "var(--error)", fontSize: 13, marginTop: 8 }}>{fileError}</p>
+        )}
+        {inputConflictWarning && (
+          <div
+            style={{
+              marginTop: 8,
+              padding: "12px 16px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid #f0c040",
+              background: "#fefbe8",
+              fontSize: 14,
+              color: "#8a6d00",
+            }}
+          >
+            {inputConflictWarning}
+          </div>
+        )}
+      </section>
+
+      {/* Section 5 — Action buttons */}
+      <section
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 16,
+          marginBottom: "var(--section-gap)",
+        }}
+      >
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={handleEstimate}
+          disabled={isBusy}
+        >
+          Procijeni tokene
+        </button>
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={handleProcess}
+          disabled={isBusy}
+        >
+          Pokreni AI obradu
+        </button>
+      </section>
+
+      {/* Error / Loader */}
+      {error && <ErrorMessage message={error} />}
+      {isProcessing && <Loader label="Obrada u toku..." />}
+      {isEstimating && <Loader label="Procjena u toku..." />}
+
+      {/* Section 6 — Estimate */}
+      {estimate && (
+        <EstimateDisplay
+          requiredTokens={estimate.requiredTokens}
+          currentBalance={estimate.currentBalance}
+          canProcess={estimate.canProcess}
+          suggestedPackage={estimate.suggestedPackage}
+          nextLowerPackage={estimate.nextLowerPackage}
+          differenceToLowerPackage={estimate.differenceToLowerPackage}
+          serviceType={serviceType}
+        />
+      )}
+
+      {/* Section 7 — Diff / Result */}
+      {diffOps ? (
+        <DiffDisplay
+          original={originalText}
+          edited={processedText}
+          diff={diffOps as ProcessResponse["diff"]}
+          changes={reversibleChanges ?? []}
+          tokens={reversibleTokens ?? []}
+          cardCount={cardCount}
+        />
+      ) : processedText ? (
+        <ResultDisplay processedText={processedText} cardCount={cardCount} />
+      ) : null}
+    </motion.div>
   );
 }
 

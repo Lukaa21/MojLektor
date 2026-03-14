@@ -5,10 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ServiceType } from "../../core/models";
 import DiffDisplay from "../../components/DiffDisplay";
 import { ErrorMessage } from "../../components/Error";
-import { Header } from "../../components/Header";
 import { Loader } from "../../components/Loader";
-import { SelectInput } from "../../components/SelectInput";
-import { TextInput } from "../../components/TextInput";
 import { demoTexts, type DemoTextTypeKey } from "../../data/demoTexts";
 import {
   processDemoCorrectionRequest,
@@ -16,18 +13,16 @@ import {
 } from "../../lib/correctionRequest";
 import type { DiffOp, ReversibleChange, ReversibleToken } from "../../lib/api";
 
-const serviceOptions = [
-  { value: "LEKTURA", label: "Lektura" },
-  { value: "KOREKTURA", label: "Korektura" },
-  { value: "BOTH", label: "Lektura + Korektura" },
+const serviceCards: { value: ServiceType; icon: string; label: string; desc: string }[] = [
+  { value: "LEKTURA" as ServiceType, icon: "✎", label: "Lektura", desc: "Stilska i jezička dorađenost" },
+  { value: "KOREKTURA" as ServiceType, icon: "✦", label: "Korektura", desc: "Pravopis, interpunkcija, greške" },
+  { value: "BOTH" as ServiceType, icon: "✯", label: "Kombinovano", desc: "Sve u jednom prolazu" },
 ];
 
-const textTypeOptions = [
-  { value: "akademski rad", label: "Akademski rad" },
-  { value: "clanak", label: "Članak" },
+const textTypeChips = [
+  { value: "akademski rad", label: "Akademski" },
+  { value: "clanak", label: "Novinarski" },
 ];
-
-const languageOptions = [{ value: "srpski", label: "Srpski" }];
 
 const VALIDATION_EMPTY_TEXT = "Unesite tekst prije slanja.";
 
@@ -96,81 +91,142 @@ export default function TestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[color:var(--background)]">
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-10 sm:px-8 lg:px-12">
-        <Header
-          title="MojLektor"
-          subtitle="Automatizovana lektura i korektura za tekstove sa balkanskog govornog područja. Fokus na čitljivosti, jasnoći i urednom akademskom stilu."
-        />
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="container"
+      style={{ paddingTop: 60, paddingBottom: 80 }}
+    >
+      {/* Demo banner */}
+      <div
+        style={{
+          padding: "12px 20px",
+          borderRadius: "var(--radius-md)",
+          background: "var(--accent-soft)",
+          color: "var(--accent)",
+          fontSize: 14,
+          fontWeight: 500,
+          marginBottom: 32,
+          textAlign: "center",
+        }}
+      >
+        Demo režim – testirajte funkcionalnost bez obrade stvarnog teksta.
+      </div>
 
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:grid-cols-[2fr_1fr]"
+      {/* Section 1 — Intro */}
+      <section style={{ textAlign: "center", marginBottom: "var(--section-gap)" }}>
+        <h1
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: 42,
+            fontWeight: 400,
+            lineHeight: 1.2,
+            marginBottom: 16,
+          }}
         >
-          <div className="flex flex-col gap-5">
-            <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-              Demo režim – testirajte funkcionalnost bez obrade stvarnog teksta.
-            </p>
-            <TextInput
-              id="rawTextDemo"
-              label="Tekst za obradu"
-              value={rawText}
-              disabled
-              onChange={() => undefined}
-              placeholder="Demo tekst je učitan automatski na osnovu odabrane vrste teksta..."
-            />
-            {error ? <ErrorMessage message={error} /> : null}
-            {isProcessing ? <Loader label="Obrada u toku..." /> : null}
-          </div>
+          Demo obrada teksta
+        </h1>
+        <p style={{ color: "var(--text-muted)", fontSize: 15 }}>
+          Odaberite uslugu i vrstu teksta, pa pokrenite obradu.
+        </p>
+      </section>
 
-          <div className="flex flex-col gap-5">
-            <SelectInput
-              id="serviceTypeDemo"
-              label="Usluga"
-              value={serviceType}
-              options={serviceOptions}
-              onChange={(value) => setServiceType(value as ServiceType)}
-            />
-            <SelectInput
-              id="textTypeDemo"
-              label="Vrsta teksta"
-              value={textType}
-              options={textTypeOptions}
-              onChange={(value) => setTextType(value)}
-            />
-            <SelectInput
-              id="languageDemo"
-              label="Jezik"
-              value="srpski"
-              options={languageOptions}
-              disabled
-              onChange={() => undefined}
-            />
-            <div className="mt-auto grid gap-3">
+      {/* Service cards */}
+      <section style={{ marginBottom: 32 }}>
+        <div className="selector-label">Vrsta usluge</div>
+        <div className="service-grid">
+          {serviceCards.map((card) => (
+            <button
+              key={card.value}
+              type="button"
+              className={`service-card${serviceType === card.value ? " active" : ""}`}
+              onClick={() => setServiceType(card.value)}
+            >
+              <span className="service-icon">{card.icon}</span>
+              <h3>{card.label}</h3>
+              <p>{card.desc}</p>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Chip selectors */}
+      <section style={{ display: "flex", gap: 40, marginBottom: 32, flexWrap: "wrap" }}>
+        <div>
+          <div className="selector-label">Tip teksta</div>
+          <div className="chip-group">
+            {textTypeChips.map((chip) => (
               <button
+                key={chip.value}
                 type="button"
-                onClick={handleProcess}
-                disabled={isProcessing}
-                className="w-full cursor-pointer rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className={`chip${textType === chip.value ? " active" : ""}`}
+                onClick={() => setTextType(chip.value)}
               >
-                Pokreni
+                {chip.label}
               </button>
-            </div>
+            ))}
           </div>
-        </motion.section>
+        </div>
+        <div>
+          <div className="selector-label">Varijanta jezika</div>
+          <div className="chip-group">
+            <span
+              className="chip active"
+              style={{ cursor: "default" }}
+            >
+              Srpski
+            </span>
+          </div>
+        </div>
+      </section>
 
-        {diffOps ? (
-          <DiffDisplay
-            original={originalText}
-            edited={processedText}
-            diff={diffOps}
-            changes={reversibleChanges ?? []}
-            tokens={reversibleTokens ?? []}
-            cardCount={cardCount}
+      {/* Editor (read-only) */}
+      <section style={{ marginBottom: 32 }}>
+        <div className="editor-container">
+          <textarea
+            value={rawText}
+            readOnly
+            style={{ cursor: "default", opacity: 0.8 }}
+            placeholder="Demo tekst je učitan automatski..."
           />
-        ) : null}
-      </main>
-    </div>
+        </div>
+      </section>
+
+      {/* Action buttons */}
+      <section
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 16,
+          marginBottom: "var(--section-gap)",
+        }}
+      >
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={handleProcess}
+          disabled={isProcessing}
+        >
+          Pokreni demo obradu
+        </button>
+      </section>
+
+      {/* Error / Loader */}
+      {error && <ErrorMessage message={error} />}
+      {isProcessing && <Loader label="Obrada u toku..." />}
+
+      {/* Diff result */}
+      {diffOps ? (
+        <DiffDisplay
+          original={originalText}
+          edited={processedText}
+          diff={diffOps}
+          changes={reversibleChanges ?? []}
+          tokens={reversibleTokens ?? []}
+          cardCount={cardCount}
+        />
+      ) : null}
+    </motion.div>
   );
 }

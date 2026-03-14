@@ -6,7 +6,14 @@ export const ErrorMessage = ({ message }: ErrorProps) => {
   return (
     <div
       role="alert"
-      className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+      style={{
+        padding: "12px 16px",
+        borderRadius: "var(--radius-md)",
+        background: "var(--error-bg)",
+        color: "var(--error)",
+        fontSize: 14,
+        marginBottom: 16,
+      }}
     >
       {message}
     </div>

@@ -13,23 +13,51 @@ export const ResultDisplay = ({ processedText, cardCount }: ResultDisplayProps) 
     <motion.section
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+      style={{
+        background: "var(--bg-card)",
+        border: "1px solid var(--border-light)",
+        borderRadius: "var(--radius-lg)",
+        padding: 32,
+        marginBottom: 32,
+      }}
       aria-live="polite"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Rezultat</h2>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+          <h2
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: 24,
+              fontWeight: 400,
+              marginBottom: 4,
+            }}
+          >
+            Rezultat
+          </h2>
+          <p style={{ fontSize: 12, color: "var(--text-ghost)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
             Kartice: {cardCount}
           </p>
         </div>
       </div>
-      <textarea
-        readOnly
-        value={processedText}
-        className="min-h-[200px] w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-900"
-        aria-label="Procesirani tekst"
-      />
+      <div className="diff-box">
+        <textarea
+          readOnly
+          value={processedText}
+          style={{
+            width: "100%",
+            minHeight: 200,
+            border: "none",
+            background: "transparent",
+            fontFamily: "var(--font-serif)",
+            fontSize: 19,
+            lineHeight: 1.8,
+            color: "var(--text-main)",
+            outline: "none",
+            resize: "vertical",
+          }}
+          aria-label="Procesirani tekst"
+        />
+      </div>
       <OutputActions outputText={processedText} />
     </motion.section>
   );

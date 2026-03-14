@@ -15,7 +15,7 @@ type DiffDisplayProps = {
   cardCount: number;
 };
 
-const leftStyle = "min-h-[200px] w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-900";
+const leftStyle = "diff-box";
 const rightStyle = leftStyle;
 
 type BatchInstance = {
@@ -210,39 +210,66 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
       <motion.section
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+        style={{
+          background: "var(--bg-card)",
+          border: "1px solid var(--border-light)",
+          borderRadius: "var(--radius-lg)",
+          padding: 32,
+          marginBottom: 32,
+        }}
         aria-live="polite"
       >
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Rezultat</h2>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Kartice: {cardCount}</p>
+            <h2
+              style={{
+                fontFamily: "var(--font-serif)",
+                fontSize: 24,
+                fontWeight: 400,
+                marginBottom: 4,
+              }}
+            >
+              Rezultat
+            </h2>
+            <p style={{ fontSize: 12, color: "var(--text-ghost)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+              Kartice: {cardCount}
+            </p>
           </div>
         </div>
 
-        <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+        <div
+          style={{
+            padding: "12px 16px",
+            borderRadius: "var(--radius-md)",
+            background: "var(--bg-subtle)",
+            color: "var(--text-muted)",
+            fontSize: 13,
+            marginBottom: 24,
+            lineHeight: 1.6,
+          }}
+        >
           Klik na zelenu riječ vraća je u originalno stanje.
           <br />
           Ctrl ili Cmd (Mac) + klik vraća sve iste promjene u tekstu.
           <br />
           Na telefonu zadržite pritisak na riječ za vraćanje svih istih promjena.
-        </p>
+        </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
           <section>
-            <h3 className="mb-2 text-sm font-medium text-slate-700">Original</h3>
+            <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8 }}>Original</h3>
             <div className={leftStyle} aria-label="Originalni tekst">
               {diff.map((op, idx) => {
                 if (op.type === "unchanged") return <span key={idx}>{op.value}</span>;
-                if (op.type === "deleted") return <span key={idx} className="text-red-700 line-through">{op.value}</span>;
-                if (op.type === "added") return <span key={idx} className="text-green-700"> </span>;
-                return <span key={idx} className="text-red-700 line-through">{op.original}</span>;
+                if (op.type === "deleted") return <del key={idx}>{op.value}</del>;
+                if (op.type === "added") return <span key={idx}> </span>;
+                return <del key={idx}>{op.original}</del>;
               })}
             </div>
           </section>
 
           <section>
-            <h3 className="mb-2 text-sm font-medium text-slate-700">Izmijenjeno</h3>
+            <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8 }}>Izmijenjeno</h3>
             <div className={rightStyle} aria-label="Izmijenjeni tekst">
               {tokenState.map((token) => {
                 if (!token.changeId || token.status !== "active") {
@@ -251,11 +278,13 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
 
                 const preview = previewIds.has(token.changeId);
                 return (
-                  <span
+                  <ins
                     key={token.id}
-                    className={`ai-change cursor-pointer rounded-sm text-green-700 font-semibold transition hover:bg-green-50 ${
-                      preview ? "ai-batch-preview bg-green-100" : ""
-                    }`}
+                    style={{
+                      cursor: "pointer",
+                      transition: "background 0.2s",
+                      background: preview ? "rgba(45, 90, 39, 0.15)" : undefined,
+                    }}
                     data-change-id={token.changeId}
                     data-group-key={token.groupKey}
                     onClick={(event) => handleTokenClick(event, token.changeId as string)}
@@ -264,7 +293,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
                     onPointerLeave={stopLongPress}
                   >
                     {token.text}
-                  </span>
+                  </ins>
                 );
               })}
             </div>

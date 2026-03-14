@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MojLektor — Premium AI Lektura</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Palette - Light Editorial */
+            --bg-page: #FDFCFB;
+            --bg-card: #FFFFFF;
+            --bg-subtle: #F5F2F0;
+            --text-main: #1A1A18;
+            --text-muted: #666360;
+            --text-ghost: #A09D9A;
+            --border-light: #E6E2DF;
+            --border-active: #C95D3B;
+            
+            /* Accent */
+            --accent: #C95D3B;
+            --accent-hover: #B04E2E;
+            --accent-soft: #F9EFEC;
+            
+            /* Feedback */
+            --success: #2D5A27;
+            --success-bg: #E9F0E8;
+            --error: #A02C2C;
+            --error-bg: #F9EBEB;
+
+            /* Typography */
+            --font-ui: 'Plus Jakarta Sans', sans-serif;
+            --font-serif: 'Newsreader', serif;
+
+            /* Specs */
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02), 0 1px 0 rgba(0,0,0,0.02);
+            --shadow-md: 0 12px 24px -10px rgba(0,0,0,0.08);
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+            /* Spacing */
+            --section-gap: 80px; /* Povećan vertikalni razmak */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background-color: var(--bg-page); 
+            color: var(--text-main); 
+            font-family: var(--font-ui);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Global Elements --- */
+        .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+        button { cursor: pointer; border: none; font-family: inherit; transition: all 0.3s var(--ease); }
+        .btn-primary { 
+            background: var(--accent); color: white; padding: 12px 28px; 
+            border-radius: var(--radius-md); font-weight: 600; font-size: 15px;
+            box-shadow: 0 4px 12px rgba(201, 93, 59, 0.2);
+        }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(201, 93, 59, 0.3); }
+        
+        .btn-secondary {
+            background: transparent; border: 1.5px solid var(--border-light);
+            padding: 11px 26px; border-radius: var(--radius-md); color: var(--text-main); font-weight: 600;
+        }
+        .btn-secondary:hover { border-color: var(--text-ghost); background: var(--bg-subtle); }
+
+        /* --- Navbar --- */
+        nav {
+            height: 72px; border-bottom: 1px solid var(--border-light);
+            display: flex; align-items: center; background: white;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .logo { font-family: var(--font-serif); font-size: 24px; font-weight: 500; font-style: italic; color: var(--accent); text-decoration: none; }
+        .nav-links { display: flex; gap: 32px; }
+        .nav-link { text-decoration: none; color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color 0.2s; }
+        .nav-link:hover, .nav-link.active { color: var(--text-main); }
+        .nav-right { display: flex; align-items: center; gap: 20px; }
+        .token-badge { background: var(--accent-soft); color: var(--accent); padding: 6px 12px; border-radius: 99px; font-weight: 700; font-size: 13px; }
+
+        /* --- Sections --- */
+        .page { display: none; padding: 60px 0; animation: fadeIn 0.5s var(--ease); }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Intro Header --- */
+        .intro-section { text-align: center; margin-bottom: var(--section-gap); }
+        .intro-section h1 { font-family: var(--font-serif); font-size: 42px; font-weight: 400; margin-bottom: 16px; }
+        .features-row { display: flex; justify-content: center; gap: 40px; margin-top: 24px; }
+        .feature-item { display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 14px; }
+        .feature-icon { width: 24px; height: 24px; background: var(--bg-subtle); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: bold; font-size: 12px; }
+
+        /* --- Service Selector --- */
+        .service-selection-group { margin-bottom: var(--section-gap); }
+        .service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+        .service-card {
+            background: white; border: 1.5px solid var(--border-light); border-radius: var(--radius-lg);
+            padding: 20px; text-align: left; transition: all 0.3s var(--ease);
+        }
+        .service-card:hover { border-color: var(--text-ghost); }
+        .service-card.active { border-color: var(--accent); background: var(--accent-soft); }
+        .service-card h3 { font-size: 16px; margin-bottom: 4px; }
+        .service-card p { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+        .service-icon { margin-bottom: 12px; display: block; font-size: 20px; }
+
+        /* --- Pill / Chip Selectors --- */
+        .selector-label { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .chip-group { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+        .chip {
+            padding: 8px 18px; border-radius: 99px; background: white; border: 1.5px solid var(--border-light);
+            font-size: 14px; font-weight: 500; color: var(--text-muted);
+        }
+        .chip:hover { border-color: var(--text-ghost); }
+        .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* --- Editor Area --- */
+        .editor-section { margin-bottom: 25px; }
+        .editor-container { background: white; border: 1px solid var(--border-light); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+        textarea {
+            width: 100%; min-height: 370px; border: none; padding: 32px;
+            font-family: var(--font-serif); font-size: 19px; line-height: 1.6; color: var(--text-main); outline: none; resize: none;
+        }
+        
+        /* 1. File Upload Zone (Dashed + Hover) */
+        .upload-zone {
+            margin: 16px 32px 32px;
+            padding: 24px;
+            border: 2px dashed var(--border-light);
+            border-radius: var(--radius-md);
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: all 0.3s var(--ease);
+            cursor: pointer;
+        }
+        .upload-zone:hover {
+            border-color: var(--text-ghost);
+            background: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        .action-buttons {
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 16px; 
+            margin-bottom: var(--section-gap);
+        }
+
+        /* --- Estimate Block --- */
+        .estimate-section { margin-bottom: var(--section-gap); }
+        .estimate-card {
+            background: white; border: 1px solid var(--border-light); border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+        .estimate-card h4 { margin-bottom: 16px; font-size: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 12px; }
+        .est-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .est-label { color: var(--text-muted); }
+        .est-value { font-weight: 600; }
+        .status-badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .status-badge.success { color: var(--success); }
+
+        /* --- Diff Result --- */
+        .result-section { margin-bottom: var(--section-gap); }
+        .diff-box {
+            background: white; border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 32px;
+            font-family: var(--font-serif); font-size: 19px; line-height: 1.8;
+        }
+        del { background: var(--error-bg); color: var(--error); text-decoration: line-through; padding: 0 4px; border-radius: 2px; }
+        ins { background: var(--success-bg); color: var(--success); text-decoration: none; padding: 0 4px; border-radius: 2px; }
+
+        /* 2. Export Section (Minimal Redesign) */
+        .export-footer {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .export-options {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .export-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-ghost);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .format-btn {
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-bottom: 2px solid transparent;
+        }
+        .format-btn:hover {
+            color: var(--text-main);
+        }
+        .format-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        .btn-save-minimal {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+        }
+        .btn-save-minimal:hover {
+            color: var(--accent-hover);
+        }
+
+        /* --- Pricing Cards --- */
+        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+        .price-card {
+            background: white; border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 40px;
+            text-align: center; transition: transform 0.3s var(--ease);
+        }
+        .price-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-md); }
+        .price-amount { font-size: 48px; font-family: var(--font-serif); font-weight: 500; margin: 20px 0; }
+        .trust-section { display: flex; justify-content: center; gap: 48px; margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--border-light); }
+        .trust-item { text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 500; }
+
+        /* --- Auth --- */
+        .auth-card { max-width: 400px; margin: 80px auto; background: white; border: 1px solid var(--border-light); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+        .auth-card h2 { font-family: var(--font-serif); font-size: 32px; margin-bottom: 24px; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+        input { width: 100%; padding: 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-family: var(--font-ui); outline: none; }
+        input:focus { border-color: var(--accent); }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="container nav-inner">
+            <a href="#" class="logo" onclick="showPage('home')">MojLektor</a>
+            <div class="nav-links">
+                <a href="#" class="nav-link active" id="link-home" onclick="showPage('home')">Editor</a>
+                <a href="#" class="nav-link" id="link-buy" onclick="showPage('buy')">Kupi tokene</a>
+                <a href="#" class="nav-link">Pomoć</a>
+            </div>
+            <div class="nav-right">
+                <div class="token-badge">69 TOKENS</div>
+                <a href="#" class="nav-link" onclick="showPage('login')">Odjavi se</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        
+        <div id="home" class="page active">
+            <section class="intro-section">
+                <h1>Vratite snagu svojim riječima.</h1>
+                <div class="features-row">
+                    <div class="feature-item"><span class="feature-icon">✓</span> Podrška za 4 jezika</div>
+                    <div class="feature-item"><span class="feature-icon">✓</span> Reverzibilne izmjene</div>
+                    <div class="feature-item"><span class="feature-icon">✓</span> Trenutna obrada</div>
+                </div>
+            </section>
+
+            <div class="service-selection-group">
+                <div class="selector-label">Vrsta usluge</div>
+                <div class="service-grid">
+                    <div class="service-card active" onclick="selectService(this)">
+                        <span class="service-icon">✎</span>
+                        <h3>Lektura</h3>
+                        <p>Gramatika, pravopis i interpunkcija.</p>
+                    </div>
+                    <div class="service-card" onclick="selectService(this)">
+                        <span class="service-icon">✦</span>
+                        <h3>Korektura</h3>
+                        <p>Stilska poboljšanja i jasnoća teksta.</p>
+                    </div>
+                    <div class="service-card" onclick="selectService(this)">
+                        <span class="service-icon">✯</span>
+                        <h3>Kombinovano</h3>
+                        <p>Potpuna obrada i rafiniranje teksta.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 40px;">
+                    <div style="flex: 1;">
+                        <div class="selector-label">Varijanta jezika</div>
+                        <div class="chip-group">
+                            <button class="chip active" onclick="selectChip(this)">Crnogorski</button>
+                            <button class="chip" onclick="selectChip(this)">Srpski</button>
+                            <button class="chip" onclick="selectChip(this)">Hrvatski</button>
+                            <button class="chip" onclick="selectChip(this)">Bosanski</button>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="selector-label">Tip teksta</div>
+                        <div class="chip-group">
+                            <button class="chip active" onclick="selectChip(this)">Akademski</button>
+                            <button class="chip" onclick="selectChip(this)">Književni</button>
+                            <button class="chip" onclick="selectChip(this)">Novinarski</button>
+                            <button class="chip" onclick="selectChip(this)">Poslovni</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="editor-section">
+                <div class="editor-container">
+                    <textarea placeholder="Unesite ili nalijepite vaš tekst ovdje...">Poštovani, pišem vam u vezi našeg zadnjeg dogovora oko projekta. Smatram da bi smo trebali fokisirati se na ključne tačke...</textarea>
+                    <div class="upload-zone">
+                        <span>Priložite dokument (.docx, .pdf ili .txt)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-secondary">Procijeni tokene</button>
+                <button class="btn-primary">Pokreni AI obradu</button>
+            </div>
+
+            <div class="estimate-section">
+                <div class="estimate-card">
+                    <h4>Procjena obrade</h4>
+                    <div class="est-row">
+                        <span class="est-label">Model obrade</span>
+                        <span class="est-value">Kombinovano (1 karakter = 1 token)</span>
+                    </div>
+                    <div class="est-row">
+                        <span class="est-label">Potrebno tokena</span>
+                        <span class="est-value">4.250</span>
+                    </div>
+                    <div class="est-row">
+                        <span class="est-label">Trenutni balans</span>
+                        <span class="est-value">69.000</span>
+                    </div>
+                    <div class="est-row">
+                        <span class="est-label">Nakon obrade ostaće vam</span>
+                        <span class="est-value">64.750</span>
+                    </div>
+                    <div class="est-row" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bg-subtle);">
+                        <span class="est-label">Status obrade</span>
+                        <span class="status-badge success">Dovoljno tokena</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-section">
+                <div class="selector-label">Rezultat i korekcije</div>
+                <div class="diff-box">
+                    Poštovani, pišem vam u vezi <del>našeg zadnjeg</del> <ins>našeg posljednjeg</ins> dogovora oko projekta. Smatram da <del>bi smo trebali fokisirati se</del> <ins>bismo se trebali usredsrediti</ins> na ključne tačke.
+                </div>
+                
+                <div class="export-footer">
+                    <div class="export-options">
+                        <span class="export-label">Preuzmi kao</span>
+                        <button class="format-btn active" onclick="selectFormat(this)">DOCX</button>
+                        <button class="format-btn" onclick="selectFormat(this)">PDF</button>
+                        <button class="format-btn" onclick="selectFormat(this)">TXT</button>
+                    </div>
+                    <button class="btn-save-minimal">
+                        <span>Sačuvaj dokument</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="buy" class="page">
+            <section class="intro-section">
+                <h1>Jednostavna dopuna.</h1>
+                <p style="color: var(--text-muted);">Bez pretplate, bez obaveza. Koristite tokene kada su vam potrebni.</p>
+            </section>
+
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <div class="selector-label">Osnovni</div>
+                    <div class="price-amount">€9</div>
+                    <div class="selector-label" style="color: var(--accent);">5.000 TOKENA</div>
+                    <p style="font-size: 14px; color: var(--text-muted); margin: 20px 0;">Idealan za kraće eseje i poslovne mailove.</p>
+                    <button class="btn-secondary" style="width: 100%;">Kupi paket</button>
+                </div>
+                <div class="price-card" style="border-color: var(--accent); box-shadow: var(--shadow-md);">
+                    <div class="selector-label">Popularno</div>
+                    <div class="price-amount">€24</div>
+                    <div class="selector-label" style="color: var(--accent);">20.000 TOKENA</div>
+                    <p style="font-size: 14px; color: var(--text-muted); margin: 20px 0;">Za studente i profesionalne pisce.</p>
+                    <button class="btn-primary" style="width: 100%;">Kupi paket</button>
+                </div>
+                <div class="price-card">
+                    <div class="selector-label">Pro</div>
+                    <div class="price-amount">€89</div>
+                    <div class="selector-label" style="color: var(--accent);">100.000 TOKENA</div>
+                    <p style="font-size: 14px; color: var(--text-muted); margin: 20px 0;">Najbolja cijena za duge rukopise i knjige.</p>
+                    <button class="btn-secondary" style="width: 100%;">Kupi paket</button>
+                </div>
+            </div>
+
+            <div class="trust-section">
+                <div class="trust-item">● Tokeni nikad ne ističu</div>
+                <div class="trust-item">● Stripe sigurno plaćanje</div>
+                <div class="trust-item">● Bez automatske obnove</div>
+            </div>
+        </div>
+
+        <div id="login" class="page">
+            <div class="auth-card">
+                <h2>Dobro došli nazad</h2>
+                <div class="form-group">
+                    <label>Email adresa</label>
+                    <input type="email" placeholder="vas@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Lozinka</label>
+                    <input type="password" placeholder="••••••••">
+                </div>
+                <button class="btn-primary" style="width: 100%; margin-top: 10px;" onclick="showPage('home')">Prijavi se</button>
+                <p style="text-align: center; margin-top: 20px; font-size: 14px; color: var(--text-muted);">
+                    Nemate nalog? <a href="#" style="color: var(--accent); font-weight: 600; text-decoration: none;">Registrujte se</a>
+                </p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            const activeLink = document.getElementById('link-' + (pageId === 'buy' ? 'buy' : 'home'));
+            if(activeLink) activeLink.classList.add('active');
+
+            window.scrollTo(0,0);
+        }
+
+        function selectService(el) {
+            document.querySelectorAll('.service-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function selectChip(el) {
+            const group = el.parentElement;
+            group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function selectFormat(el) {
+            const group = el.parentElement;
+            group.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -23,7 +23,7 @@ export const OutputActions = ({
   fileBaseName = "mojlektor-output",
 }: OutputActionsProps) => {
   const [copied, setCopied] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [activeFormat, setActiveFormat] = useState<"txt" | "pdf" | "docx">("txt");
   const [error, setError] = useState<string | null>(null);
 
   const hasText = !!outputText?.trim();
@@ -45,7 +45,6 @@ export const OutputActions = ({
         type: "text/plain;charset=utf-8",
       });
       saveBlob(blob, `${fileBaseName}.txt`);
-      setOpen(false);
       setError(null);
     } catch {
       setError("Greška pri čuvanju TXT fajla.");
@@ -78,7 +77,6 @@ export const OutputActions = ({
         })
         .download(`${fileBaseName}.pdf`);
 
-      setOpen(false);
       setError(null);
     } catch {
       setError("Greška pri generisanju PDF fajla.");
@@ -108,63 +106,67 @@ export const OutputActions = ({
 
       const blob = await Packer.toBlob(doc);
       saveBlob(blob, `${fileBaseName}.docx`);
-      setOpen(false);
       setError(null);
     } catch {
       setError("Greška pri generisanju DOCX fajla.");
     }
   };
 
+  const handleSave = () => {
+    if (activeFormat === "txt") exportTxt();
+    else if (activeFormat === "pdf") void exportPdf();
+    else void exportDocx();
+  };
+
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="export-footer">
+      <div className="export-options">
+        <span className="export-label">Format</span>
         <button
           type="button"
+          className={`format-btn${activeFormat === "txt" ? " active" : ""}`}
+          onClick={() => setActiveFormat("txt")}
+        >
+          TXT
+        </button>
+        <button
+          type="button"
+          className={`format-btn${activeFormat === "pdf" ? " active" : ""}`}
+          onClick={() => setActiveFormat("pdf")}
+        >
+          PDF
+        </button>
+        <button
+          type="button"
+          className={`format-btn${activeFormat === "docx" ? " active" : ""}`}
+          onClick={() => setActiveFormat("docx")}
+        >
+          DOCX
+        </button>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <button
+          type="button"
+          className="btn-save-minimal"
           onClick={copyText}
           disabled={!hasText}
-          className="cursor-pointer rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {copied ? "Kopirano ✓" : "Kopiraj tekst"}
+          {copied ? "Kopirano ✓" : "📋 Kopiraj"}
         </button>
-
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setOpen((prev) => !prev)}
-            disabled={!hasText}
-            className="cursor-pointer rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Sačuvaj kao
-          </button>
-
-          {open && hasText ? (
-            <div className="absolute z-10 mt-2 w-40 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-              <button
-                type="button"
-                onClick={exportTxt}
-                className="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs text-slate-700 transition hover:bg-slate-50"
-              >
-                .txt
-              </button>
-              <button
-                type="button"
-                onClick={exportPdf}
-                className="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs text-slate-700 transition hover:bg-slate-50"
-              >
-                .pdf
-              </button>
-              <button
-                type="button"
-                onClick={exportDocx}
-                className="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs text-slate-700 transition hover:bg-slate-50"
-              >
-                .docx
-              </button>
-            </div>
-          ) : null}
-        </div>
+        <button
+          type="button"
+          className="btn-save-minimal"
+          onClick={handleSave}
+          disabled={!hasText}
+        >
+          ↓ Sačuvaj
+        </button>
       </div>
-      {error ? <p className="text-xs text-red-600">{error}</p> : null}
+
+      {error && (
+        <p style={{ color: "var(--error)", fontSize: 13, marginTop: 8 }}>{error}</p>
+      )}
     </div>
   );
 };

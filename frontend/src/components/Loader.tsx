@@ -4,8 +4,28 @@ type LoaderProps = {
 
 export const Loader = ({ label = "Obrada u toku..." }: LoaderProps) => {
   return (
-    <div className="flex items-center gap-3 text-sm text-slate-600" role="status">
-      <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+    <div
+      role="status"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        fontSize: 14,
+        color: "var(--text-muted)",
+        marginBottom: 16,
+      }}
+    >
+      <span
+        className="animate-spin"
+        style={{
+          display: "inline-block",
+          width: 16,
+          height: 16,
+          borderRadius: "50%",
+          border: "2px solid var(--border-light)",
+          borderTopColor: "var(--accent)",
+        }}
+      />
       {label}
     </div>
   );

@@ -40,53 +40,59 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[color:var(--background)]">
-      <main className="mx-auto flex w-full max-w-md flex-col gap-6 px-5 py-10 sm:px-8">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold text-slate-900">Prijava</h1>
-          <p className="mt-2 text-sm text-slate-600">Prijavite se da biste koristili tokene i obradu teksta.</p>
+    <div className="auth-card">
+      <h2>Prijava</h2>
+      <p style={{ color: "var(--text-muted)", fontSize: 14, textAlign: "center", marginBottom: 24 }}>
+        Prijavite se da biste koristili tokene i obradu teksta.
+      </p>
 
-          <form className="mt-5 flex flex-col gap-4" onSubmit={onSubmit}>
-            <label className="flex flex-col gap-1 text-sm text-slate-700">
-              Email
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="rounded-xl border border-slate-200 px-3 py-2"
-                required
-              />
-            </label>
+      <form onSubmit={onSubmit}>
+        <div className="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
 
-            <label className="flex flex-col gap-1 text-sm text-slate-700">
-              Lozinka
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="rounded-xl border border-slate-200 px-3 py-2"
-                required
-              />
-            </label>
+        <div className="form-group">
+          <label>Lozinka</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
 
-            {error ? (
-              <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
-            ) : null}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-            >
-              {isSubmitting ? "Prijava..." : "Prijavi se"}
-            </button>
-          </form>
-
-          <p className="mt-4 text-sm text-slate-600">
-            Nemate nalog? <Link href="/register" className="font-semibold text-slate-900">Registracija</Link>
+        {error && (
+          <p
+            style={{
+              padding: "10px 14px",
+              borderRadius: "var(--radius-md)",
+              background: "var(--error-bg)",
+              color: "var(--error)",
+              fontSize: 13,
+              marginBottom: 16,
+            }}
+          >
+            {error}
           </p>
-        </section>
-      </main>
+        )}
+
+        <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ width: "100%" }}>
+          {isSubmitting ? "Prijava..." : "Prijavi se"}
+        </button>
+      </form>
+
+      <p style={{ marginTop: 20, fontSize: 14, color: "var(--text-muted)", textAlign: "center" }}>
+        Nemate nalog?{" "}
+        <Link href="/register" style={{ color: "var(--accent)", fontWeight: 600, textDecoration: "none" }}>
+          Registracija
+        </Link>
+      </p>
     </div>
   );
 }
