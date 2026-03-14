@@ -16,8 +16,8 @@
   --success-bg: #E9F0E8;
   --error: #A02C2C;
   --error-bg: #F9EBEB;
-  --font-ui: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
-  --font-serif: var(--font-newsreader), 'Newsreader', serif;
+  --font-ui: 'Plus Jakarta Sans', sans-serif;
+  --font-serif: 'Newsreader', serif;
   --radius-lg: 12px;
   --radius-md: 8px;
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.02), 0 1px 0 rgba(0,0,0,0.02);
@@ -78,7 +78,7 @@ body {
 /* --- Chips --- */
 .chip-group { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
 .chip {
-  padding: 8px 18px; border-radius: 99px; background: white;
+  padding: 6px 18px; border-radius: 99px; background: white;
   border: 1.5px solid var(--border-light); font-size: 14px; font-weight: 500;
   color: var(--text-muted); cursor: pointer; font-family: inherit;
   transition: all 0.3s var(--ease);
@@ -95,7 +95,7 @@ body {
 }
 .service-card:hover { border-color: var(--text-ghost); }
 .service-card.active { border-color: var(--accent); background: var(--accent-soft); }
-.service-card h3 { font-size: 16px; margin-bottom: 4px; }
+.service-card h3 { font-size: 16px; margin-bottom: 4px; font-weight: bold; }
 .service-card p { font-size: 13px; color: var(--text-muted); line-height: 1.4; margin: 0; }
 .service-icon { margin-bottom: 12px; display: block; font-size: 20px; }
 
@@ -138,8 +138,8 @@ body {
   padding: 4px 10px; border-radius: 4px; font-size: 12px;
   font-weight: 700; text-transform: uppercase; display: inline-block;
 }
-.status-badge.success { color: var(--success); background: var(--success-bg); }
-.status-badge.error { color: var(--error); background: var(--error-bg); }
+.status-badge.success { color: var(--success); }
+.status-badge.error { color: var(--error); }
 
 /* --- Diff Result --- */
 .result-section { margin-bottom: var(--section-gap); }

@@ -70,6 +70,7 @@ export default function Home() {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [inputConflictWarning, setInputConflictWarning] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const trimmedText = useMemo(() => rawText.trim(), [rawText]);
 
@@ -426,12 +427,31 @@ export default function Home() {
           />
           <div
             className="upload-zone"
+            style={isDragging ? {
+              borderColor: "var(--text-ghost)",
+              background: "var(--bg-card)",
+              color: "var(--text-main)",
+            } : undefined}
             onClick={() => {
               if (trimmedText) {
                 setInputConflictWarning(conflictMessage);
                 return;
               }
               fileInputRef.current?.click();
+            }}
+            onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsDragging(false);
+              if (trimmedText) {
+                setInputConflictWarning(conflictMessage);
+                return;
+              }
+              const droppedFile = e.dataTransfer.files?.[0] ?? null;
+              handleFileChange(droppedFile);
             }}
           >
             <input
@@ -466,7 +486,7 @@ export default function Home() {
                 </button>
               </span>
             ) : (
-              <span>📎 Priložite dokument (.docx, .pdf ili .txt)</span>
+              <span>Izaberite ili prevucite dokument (.docx, .pdf ili .txt)</span>
             )}
           </div>
         </div>

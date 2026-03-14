@@ -111,7 +111,7 @@ export default function TestPage() {
           textAlign: "center",
         }}
       >
-        Demo režim – testirajte funkcionalnost bez obrade stvarnog teksta.
+        Demo režim – testirajte funkcionalnost bez potrošnje tokena.
       </div>
 
       {/* Section 1 — Intro */}

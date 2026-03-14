@@ -59,7 +59,7 @@ export const EstimateDisplay = ({
         </div>
       )}
       <div className="est-row" style={{ borderTop: "1px solid var(--border-light)", paddingTop: 12, marginTop: 8 }}>
-        <span className="est-label" style={{ fontWeight: 600, color: "var(--text-main)" }}>Status</span>
+        <span className="est-label">Status</span>
         <span className={`status-badge ${canProcess ? "success" : "error"}`}>
           {canProcess ? "Dovoljno tokena" : "Nedovoljno tokena"}
         </span>

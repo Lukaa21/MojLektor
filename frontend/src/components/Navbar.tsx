@@ -8,7 +8,8 @@ import type { AuthUser, TokenBalanceResponse } from "../lib/api";
 import { useTokenBalance } from "../context/TokenBalanceContext";
 
 const navLinks = [
-  { name: "Editor", href: "/" },
+  { name: "Početna", href: "/" },
+  { name: "Test", href: "/test" },
   { name: "Kupi tokene", href: "/buy-tokens" },
 ];
 
@@ -121,13 +122,19 @@ export const Navbar = () => {
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           {user ? (
             <>
-              <Link
-                href="/buy-tokens"
+              <div
                 className="token-badge"
-                style={{ textDecoration: "none" }}
+                style={{
+                  textDecoration: "none",
+                  color: "var(--accent)",
+                  padding: "6px 12px",
+                  borderRadius: 99,
+                  fontWeight: 700,
+                  fontSize: 13,
+                }}
               >
                 {balance ?? user.tokenBalance} TOKENS
-              </Link>
+              </div>
               <button
                 type="button"
                 onClick={handleLogout}
