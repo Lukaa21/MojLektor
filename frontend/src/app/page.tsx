@@ -23,9 +23,9 @@ import { Loader } from "../components/Loader";
 import { ResultDisplay } from "../components/ResultDisplay";
 
 const serviceCards: { value: ServiceType; icon: string; label: string; desc: string }[] = [
-  { value: "LEKTURA" as ServiceType, icon: "✎", label: "Lektura", desc: "Stilska i jezička dorađenost" },
-  { value: "KOREKTURA" as ServiceType, icon: "✦", label: "Korektura", desc: "Pravopis, interpunkcija, greške" },
-  { value: "BOTH" as ServiceType, icon: "✯", label: "Kombinovano", desc: "Sve u jednom prolazu" },
+  { value: "LEKTURA" as ServiceType, icon: "✎", label: "Lektura", desc: "Gramatika, pravopis i interpunkcija." },
+  { value: "KOREKTURA" as ServiceType, icon: "✦", label: "Korektura", desc: "Stilska poboljšanja i jasnoća teksta." },
+  { value: "BOTH" as ServiceType, icon: "✯", label: "Kombinovano", desc: "Potpuna obrada i rafiniranje teksta." },
 ];
 
 const languageChips: { value: Language; label: string }[] = [
@@ -303,20 +303,20 @@ export default function Home() {
             fontSize: 42,
             fontWeight: 400,
             lineHeight: 1.2,
-            marginBottom: 32,
+            marginBottom: 16,
           }}
         >
           Vratite snagu svojim riječima.
         </h1>
-        <div style={{ display: "flex", justifyContent: "center", gap: 32 }}>
-          {["Podrška za 4 jezika", "Reverzibilne izmjene", "Trenutna AI obrada"].map(
+        <div style={{ display: "flex", justifyContent: "center", gap: 40, marginTop: 24 }}>
+          {["Podrška za 4 jezika", "Reverzibilne izmjene", "Trenutna obrada"].map(
             (feature) => (
               <span
                 key={feature}
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 8,
+                  gap: 10,
                   fontSize: 14,
                   color: "var(--text-muted)",
                 }}
@@ -326,12 +326,12 @@ export default function Home() {
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    width: 20,
-                    height: 20,
+                    width: 24,
+                    height: 24,
                     borderRadius: "50%",
-                    background: "var(--success-bg)",
-                    color: "var(--success)",
-                    fontSize: 10,
+                    background: "var(--bg-subtle)",
+                    color: "var(--accent)",
+                    fontSize: 12,
                     fontWeight: 700,
                   }}
                 >

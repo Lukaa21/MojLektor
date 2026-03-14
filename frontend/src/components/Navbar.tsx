@@ -8,8 +8,8 @@ import type { AuthUser, TokenBalanceResponse } from "../lib/api";
 import { useTokenBalance } from "../context/TokenBalanceContext";
 
 const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "Test", href: "/test" },
+  { name: "Editor", href: "/" },
+  { name: "Kupi tokene", href: "/buy-tokens" },
 ];
 
 export const Navbar = () => {
@@ -85,11 +85,10 @@ export const Navbar = () => {
           style={{
             fontFamily: "var(--font-serif)",
             fontStyle: "italic",
-            fontSize: 22,
-            fontWeight: 400,
-            color: "var(--text-main)",
+            fontSize: 24,
+            fontWeight: 500,
+            color: "var(--accent)",
             textDecoration: "none",
-            letterSpacing: "-0.02em",
           }}
         >
           MojLektor
@@ -108,11 +107,7 @@ export const Navbar = () => {
                   fontWeight: 500,
                   color: isActive ? "var(--text-main)" : "var(--text-muted)",
                   textDecoration: "none",
-                  borderBottom: isActive
-                    ? "2px solid var(--accent)"
-                    : "2px solid transparent",
-                  paddingBottom: 2,
-                  transition: "color 0.2s, border-color 0.2s",
+                  transition: "color 0.2s",
                 }}
                 aria-current={isActive ? "page" : undefined}
               >
@@ -123,33 +118,21 @@ export const Navbar = () => {
         </div>
 
         {/* Right side */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           {user ? (
             <>
               <Link
                 href="/buy-tokens"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: "var(--accent-soft)",
-                  color: "var(--accent)",
-                  padding: "6px 14px",
-                  borderRadius: 99,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  transition: "background 0.2s",
-                }}
+                className="token-badge"
+                style={{ textDecoration: "none" }}
               >
-                <span>🪙</span>
-                <span>{balance ?? user.tokenBalance} tokena</span>
+                {balance ?? user.tokenBalance} TOKENS
               </Link>
               <button
                 type="button"
                 onClick={handleLogout}
                 style={{
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: 500,
                   color: "var(--text-muted)",
                   background: "none",

@@ -131,41 +131,29 @@ export default function BuyTokensPage() {
   }
 
   const packageLabels = ["Osnovni", "Popularno", "Pro"];
+  const packageDescriptions = [
+    "Idealan za kraće eseje i poslovne mailove.",
+    "Za studente i profesionalne pisce.",
+    "Najbolja cijena za duge rukopise i knjige.",
+  ];
 
   return (
     <div className="container" style={{ paddingTop: 60, paddingBottom: 80 }}>
-      <section style={{ textAlign: "center", marginBottom: 48 }}>
+      <section className="intro-section">
         <h1
           style={{
             fontFamily: "var(--font-serif)",
-            fontSize: 36,
+            fontSize: 42,
             fontWeight: 400,
-            marginBottom: 12,
+            marginBottom: 16,
           }}
         >
-          Kupite tokene
+          Jednostavna dopuna.
         </h1>
-        <p style={{ color: "var(--text-muted)", fontSize: 15 }}>
-          1 token = 1 karakter. Tokeni se dodaju nakon potvrđene Stripe uplate.
+        <p style={{ color: "var(--text-muted)" }}>
+          Bez pretplate, bez obaveza. Koristite tokene kada su vam potrebni.
         </p>
-        {balance !== null && (
-          <p
-            style={{
-              marginTop: 16,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: "var(--accent-soft)",
-              color: "var(--accent)",
-              padding: "6px 16px",
-              borderRadius: 99,
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
-            Trenutni balans: {balance} tokena
-          </p>
-        )}
+
         {suggestionText && (
           <p
             style={{
@@ -240,30 +228,26 @@ export default function BuyTokensPage() {
             return (
               <article
                 key={pkg.id}
-                className={`price-card${isFeatured ? " featured" : ""}`}
+                className="price-card"
+                style={isFeatured ? { borderColor: "var(--accent)", boxShadow: "var(--shadow-md)" } : undefined}
               >
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "var(--text-muted)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                  }}
-                >
+                <div className="selector-label">
                   {packageLabels[i] ?? `Paket ${i + 1}`}
                 </div>
                 <div className="price-amount">
-                  {pkg.priceEur.toFixed(0)}<span style={{ fontSize: 20 }}>€</span>
+                  €{pkg.priceEur.toFixed(0)}
+                </div>
+                <div className="selector-label" style={{ color: "var(--accent)" }}>
+                  {pkg.tokenAmount.toLocaleString("de-DE")} TOKENA
                 </div>
                 <p
                   style={{
+                    fontSize: 14,
                     color: "var(--text-muted)",
-                    fontSize: 15,
-                    marginBottom: 24,
+                    margin: "20px 0",
                   }}
                 >
-                  {pkg.tokenAmount.toLocaleString()} tokena
+                  {packageDescriptions[i] ?? ""}
                 </p>
                 <button
                   type="button"
@@ -272,7 +256,7 @@ export default function BuyTokensPage() {
                   className={isFeatured ? "btn-primary" : "btn-secondary"}
                   style={{ width: "100%" }}
                 >
-                  {purchasingId === pkg.id ? "Preusmjeravanje..." : "Odaberi"}
+                  {purchasingId === pkg.id ? "Preusmjeravanje..." : "Kupi paket"}
                 </button>
               </article>
             );
@@ -281,9 +265,9 @@ export default function BuyTokensPage() {
       )}
 
       <div className="trust-section">
-        <div className="trust-item">🔒 Sigurno plaćanje putem Stripe-a</div>
-        <div className="trust-item">⚡ Instant aktivacija tokena</div>
-        <div className="trust-item">📧 Račun na email</div>
+        <div className="trust-item">● Tokeni nikad ne ističu</div>
+        <div className="trust-item">● Stripe sigurno plaćanje</div>
+        <div className="trust-item">● Bez automatske obnove</div>
       </div>
     </div>
   );

@@ -22,22 +22,10 @@ export const OutputActions = ({
   outputText,
   fileBaseName = "mojlektor-output",
 }: OutputActionsProps) => {
-  const [copied, setCopied] = useState(false);
-  const [activeFormat, setActiveFormat] = useState<"txt" | "pdf" | "docx">("txt");
+  const [activeFormat, setActiveFormat] = useState<"txt" | "pdf" | "docx">("docx");
   const [error, setError] = useState<string | null>(null);
 
   const hasText = !!outputText?.trim();
-
-  const copyText = async () => {
-    if (!hasText) return;
-    try {
-      await navigator.clipboard.writeText(outputText);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setError("Kopiranje nije uspjelo. Pokušajte ponovo.");
-    }
-  };
 
   const exportTxt = () => {
     try {
@@ -121,13 +109,13 @@ export const OutputActions = ({
   return (
     <div className="export-footer">
       <div className="export-options">
-        <span className="export-label">Format</span>
+        <span className="export-label">Preuzmi kao</span>
         <button
           type="button"
-          className={`format-btn${activeFormat === "txt" ? " active" : ""}`}
-          onClick={() => setActiveFormat("txt")}
+          className={`format-btn${activeFormat === "docx" ? " active" : ""}`}
+          onClick={() => setActiveFormat("docx")}
         >
-          TXT
+          DOCX
         </button>
         <button
           type="button"
@@ -138,31 +126,22 @@ export const OutputActions = ({
         </button>
         <button
           type="button"
-          className={`format-btn${activeFormat === "docx" ? " active" : ""}`}
-          onClick={() => setActiveFormat("docx")}
+          className={`format-btn${activeFormat === "txt" ? " active" : ""}`}
+          onClick={() => setActiveFormat("txt")}
         >
-          DOCX
+          TXT
         </button>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <button
-          type="button"
-          className="btn-save-minimal"
-          onClick={copyText}
-          disabled={!hasText}
-        >
-          {copied ? "Kopirano ✓" : "📋 Kopiraj"}
-        </button>
-        <button
-          type="button"
-          className="btn-save-minimal"
-          onClick={handleSave}
-          disabled={!hasText}
-        >
-          ↓ Sačuvaj
-        </button>
-      </div>
+      <button
+        type="button"
+        className="btn-save-minimal"
+        onClick={handleSave}
+        disabled={!hasText}
+      >
+        <span>Sačuvaj dokument</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
 
       {error && (
         <p style={{ color: "var(--error)", fontSize: 13, marginTop: 8 }}>{error}</p>

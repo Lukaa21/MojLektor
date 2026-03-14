@@ -142,6 +142,7 @@ body {
 .status-badge.error { color: var(--error); background: var(--error-bg); }
 
 /* --- Diff Result --- */
+.result-section { margin-bottom: var(--section-gap); }
 .diff-box {
   background: white; border: 1px solid var(--border-light); border-radius: var(--radius-lg);
   padding: 32px; font-family: var(--font-serif); font-size: 19px; line-height: 1.8;
@@ -183,6 +184,7 @@ body {
 .btn-save-minimal:hover { color: var(--accent-hover); }
 
 /* --- Pricing --- */
+.intro-section { text-align: center; margin-bottom: var(--section-gap); }
 .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
 .price-card {
   background: white; border: 1px solid var(--border-light); border-radius: var(--radius-lg);

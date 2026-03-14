@@ -15,9 +15,6 @@ type DiffDisplayProps = {
   cardCount: number;
 };
 
-const leftStyle = "diff-box";
-const rightStyle = leftStyle;
-
 type BatchInstance = {
   changeId: string;
   before: string;
@@ -205,99 +202,128 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
     closeBatch();
   };
 
+  /* Map each non-unchanged diff op to its corresponding change (parallel order) */
+  const diffChangeMap = useMemo(() => {
+    const map = new Map<number, ReversibleChange>();
+    let cIdx = 0;
+    diff.forEach((op, opIdx) => {
+      if (op.type !== "unchanged" && cIdx < changeState.length) {
+        map.set(opIdx, changeState[cIdx]);
+        cIdx++;
+      }
+    });
+    return map;
+  }, [diff, changeState]);
+
+  const [copied, setCopied] = useState(false);
+
+  const copyText = async () => {
+    if (!renderedText.trim()) return;
+    try {
+      await navigator.clipboard.writeText(renderedText);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  };
+
   return (
     <>
       <motion.section
+        className="result-section"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border-light)",
-          borderRadius: "var(--radius-lg)",
-          padding: 32,
-          marginBottom: 32,
-        }}
         aria-live="polite"
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <div>
-            <h2
-              style={{
-                fontFamily: "var(--font-serif)",
-                fontSize: 24,
-                fontWeight: 400,
-                marginBottom: 4,
-              }}
-            >
-              Rezultat
-            </h2>
-            <p style={{ fontSize: 12, color: "var(--text-ghost)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-              Kartice: {cardCount}
-            </p>
-          </div>
-        </div>
+        <div className="selector-label">Rezultat i korekcije</div>
 
-        <div
-          style={{
-            padding: "12px 16px",
-            borderRadius: "var(--radius-md)",
-            background: "var(--bg-subtle)",
-            color: "var(--text-muted)",
-            fontSize: 13,
-            marginBottom: 24,
-            lineHeight: 1.6,
-          }}
-        >
-          Klik na zelenu riječ vraća je u originalno stanje.
-          <br />
-          Ctrl ili Cmd (Mac) + klik vraća sve iste promjene u tekstu.
-          <br />
-          Na telefonu zadržite pritisak na riječ za vraćanje svih istih promjena.
-        </div>
+        <div className="diff-box" style={{ position: "relative" }}>
+          {/* Copy icon – top-right */}
+          <button
+            type="button"
+            onClick={copyText}
+            aria-label={copied ? "Kopirano" : "Kopiraj tekst"}
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 6,
+              borderRadius: "var(--radius-md)",
+              color: copied ? "var(--success)" : "var(--text-ghost)",
+              transition: "color 0.2s",
+            }}
+          >
+            {copied ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            )}
+          </button>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-          <section>
-            <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8 }}>Original</h3>
-            <div className={leftStyle} aria-label="Originalni tekst">
-              {diff.map((op, idx) => {
-                if (op.type === "unchanged") return <span key={idx}>{op.value}</span>;
-                if (op.type === "deleted") return <del key={idx}>{op.value}</del>;
-                if (op.type === "added") return <span key={idx}> </span>;
-                return <del key={idx}>{op.original}</del>;
-              })}
-            </div>
-          </section>
+          {/* Inline diff content */}
+          {diff.map((op, idx) => {
+            if (op.type === "unchanged") {
+              return <span key={idx}>{op.value}</span>;
+            }
 
-          <section>
-            <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", marginBottom: 8 }}>Izmijenjeno</h3>
-            <div className={rightStyle} aria-label="Izmijenjeni tekst">
-              {tokenState.map((token) => {
-                if (!token.changeId || token.status !== "active") {
-                  return <span key={token.id}>{token.text}</span>;
-                }
+            const change = diffChangeMap.get(idx);
+            const isReverted = change?.status === "reverted";
+            const isPreview = change ? previewIds.has(change.id) : false;
 
-                const preview = previewIds.has(token.changeId);
-                return (
-                  <ins
-                    key={token.id}
-                    style={{
-                      cursor: "pointer",
-                      transition: "background 0.2s",
-                      background: preview ? "rgba(45, 90, 39, 0.15)" : undefined,
-                    }}
-                    data-change-id={token.changeId}
-                    data-group-key={token.groupKey}
-                    onClick={(event) => handleTokenClick(event, token.changeId as string)}
-                    onPointerDown={() => startLongPress(token.changeId as string)}
-                    onPointerUp={stopLongPress}
-                    onPointerLeave={stopLongPress}
-                  >
-                    {token.text}
-                  </ins>
-                );
-              })}
-            </div>
-          </section>
+            if (op.type === "deleted") {
+              return isReverted
+                ? <span key={idx}>{op.value}</span>
+                : <del key={idx}>{op.value}</del>;
+            }
+
+            if (op.type === "added") {
+              if (isReverted) return null;
+              return (
+                <ins
+                  key={idx}
+                  style={{
+                    cursor: change ? "pointer" : undefined,
+                    transition: "background 0.2s",
+                    background: isPreview ? "rgba(45, 90, 39, 0.15)" : undefined,
+                  }}
+                  onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
+                  onPointerDown={change ? () => startLongPress(change.id) : undefined}
+                  onPointerUp={stopLongPress}
+                  onPointerLeave={stopLongPress}
+                >
+                  {op.value}
+                </ins>
+              );
+            }
+
+            /* modified */
+            if (isReverted) {
+              return <span key={idx}>{op.original}</span>;
+            }
+
+            return (
+              <span key={idx}>
+                <del>{op.original}</del>{" "}
+                <ins
+                  style={{
+                    cursor: change ? "pointer" : undefined,
+                    transition: "background 0.2s",
+                    background: isPreview ? "rgba(45, 90, 39, 0.15)" : undefined,
+                  }}
+                  onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
+                  onPointerDown={change ? () => startLongPress(change.id) : undefined}
+                  onPointerUp={stopLongPress}
+                  onPointerLeave={stopLongPress}
+                >
+                  {op.edited}
+                </ins>
+              </span>
+            );
+          })}
         </div>
 
         <OutputActions outputText={renderedText} />
