@@ -22,6 +22,9 @@ const newsreader = Newsreader({
 export const metadata: Metadata = {
   title: "MojLektor",
   description: "AI lektura i korektura za balkanske jezike.",
+  icons: {
+    icon: "/mojlektor_logo.png",
+  },
 };
 
 export default function RootLayout({

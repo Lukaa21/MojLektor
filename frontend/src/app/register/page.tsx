@@ -44,7 +44,7 @@ export default function RegisterPage() {
     <div className="auth-card">
       <h2>Registracija</h2>
       <p style={{ color: "var(--text-muted)", fontSize: 14, textAlign: "center", marginBottom: 24 }}>
-        Kreirajte nalog i upravljajte tokenima po korisniku.
+        Kreirajte nalog da biste koristili tokene i obradu teksta.
       </p>
 
       <form onSubmit={onSubmit}>

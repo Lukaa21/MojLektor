@@ -119,7 +119,7 @@ export default function Home() {
       try {
         const user = await getCurrentUser();
         if (!user) {
-          router.push("/login?next=/");
+          router.push("/register");
           return;
         }
       } finally {
@@ -193,7 +193,7 @@ export default function Home() {
       }
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        router.push("/login?next=/");
+        router.push("/test");
         return;
       }
 
@@ -267,7 +267,7 @@ export default function Home() {
       setEstimate(data);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        router.push("/login?next=/");
+        router.push("/test");
         return;
       }
 
@@ -310,7 +310,7 @@ export default function Home() {
           Vratite snagu svojim riječima.
         </h1>
         <div style={{ display: "flex", justifyContent: "center", gap: 40, marginTop: 24 }}>
-          {["Podrška za 4 jezika", "Reverzibilne izmjene", "Trenutna obrada"].map(
+          {["Podrška za 4 jezika", "Reverzibilne izmjene", "Automatska obrada"].map(
             (feature) => (
               <span
                 key={feature}
@@ -491,21 +491,15 @@ export default function Home() {
           </div>
         </div>
         {fileError && (
-          <p style={{ color: "var(--error)", fontSize: 13, marginTop: 8 }}>{fileError}</p>
+          <div className="alert alert-error" style={{ marginTop: 8 }}>
+            <svg className="alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+            <span>{fileError}</span>
+          </div>
         )}
         {inputConflictWarning && (
-          <div
-            style={{
-              marginTop: 8,
-              padding: "12px 16px",
-              borderRadius: "var(--radius-md)",
-              border: "1px solid #f0c040",
-              background: "#fefbe8",
-              fontSize: 14,
-              color: "#8a6d00",
-            }}
-          >
-            {inputConflictWarning}
+          <div className="alert alert-warning" style={{ marginTop: 8 }}>
+            <svg className="alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+            <span>{inputConflictWarning}</span>
           </div>
         )}
       </section>

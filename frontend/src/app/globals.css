@@ -221,6 +221,29 @@ body {
 }
 .form-group input:focus { border-color: var(--accent); }
 
+/* --- Alerts / Messages --- */
+.alert {
+  margin-top: 16px; padding: 14px 18px; border-radius: var(--radius-md);
+  font-size: 14px; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px;
+  border: 1px solid transparent;
+}
+.alert-error {
+  background: var(--error-bg); color: var(--error); border-color: rgba(160, 44, 44, 0.15);
+}
+.alert-success {
+  background: var(--success-bg); color: var(--success); border-color: rgba(45, 90, 39, 0.15);
+}
+.alert-warning {
+  background: #FEF8E8; color: #7A6200; border-color: rgba(201, 166, 59, 0.25);
+}
+.alert-info {
+  background: var(--bg-subtle); color: var(--text-muted); border-color: var(--border-light);
+}
+.alert-icon {
+  flex-shrink: 0; width: 18px; height: 18px; min-width: 18px; min-height: 18px;
+  margin-top: 1px; display: block;
+}
+
 /* --- Responsive --- */
 @media (max-width: 768px) {
   .service-grid { grid-template-columns: 1fr; }

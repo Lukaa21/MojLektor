@@ -53,7 +53,7 @@ export const Navbar = () => {
     await logoutUser();
     setUser(null);
     setBalance(null);
-    router.push("/login");
+    router.push("/test");
     router.refresh();
   };
 
@@ -83,16 +83,15 @@ export const Navbar = () => {
         {/* Logo */}
         <Link
           href="/"
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontStyle: "italic",
-            fontSize: 24,
-            fontWeight: 500,
-            color: "var(--accent)",
-            textDecoration: "none",
-          }}
+          
         >
-          MojLektor
+          <img
+            src="/mojlektor_logo.png"
+            alt="MojLektor logo"
+            width={160}
+            height={160}
+            style={{ borderRadius: 4 }}
+          />
         </Link>
 
         {/* Center nav links */}
@@ -133,7 +132,7 @@ export const Navbar = () => {
                   fontSize: 13,
                 }}
               >
-                {balance ?? user.tokenBalance} TOKENS
+                {balance ?? user.tokenBalance} TOKEN/A
               </div>
               <button
                 type="button"
