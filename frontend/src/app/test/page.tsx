@@ -14,9 +14,9 @@ import {
 import type { DiffOp, ReversibleChange, ReversibleToken } from "../../lib/api";
 
 const serviceCards: { value: ServiceType; icon: string; label: string; desc: string }[] = [
-  { value: "LEKTURA" as ServiceType, icon: "✎", label: "Lektura", desc: "Stilska i jezička dorađenost" },
-  { value: "KOREKTURA" as ServiceType, icon: "✦", label: "Korektura", desc: "Pravopis, interpunkcija, greške" },
-  { value: "BOTH" as ServiceType, icon: "✯", label: "Kombinovano", desc: "Sve u jednom prolazu" },
+  { value: "LEKTURA" as ServiceType, icon: "/lektura.png", label: "Lektura", desc: "Stilska i jezička doraženost" },
+  { value: "KOREKTURA" as ServiceType, icon: "/korektura.png", label: "Korektura", desc: "Pravopis, interpunkcija, greške" },
+  { value: "BOTH" as ServiceType, icon: "/lektura+korektura.png", label: "Kombinovano", desc: "Sve u jednom prolazu" },
 ];
 
 const textTypeChips = [
@@ -143,7 +143,7 @@ export default function TestPage() {
               className={`service-card${serviceType === card.value ? " active" : ""}`}
               onClick={() => setServiceType(card.value)}
             >
-              <span className="service-icon">{card.icon}</span>
+              <img src={card.icon} alt={card.label} className="service-icon" />
               <h3>{card.label}</h3>
               <p>{card.desc}</p>
             </button>

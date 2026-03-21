@@ -97,7 +97,7 @@ body {
 .service-card.active { border-color: var(--accent); background: var(--accent-soft); }
 .service-card h3 { font-size: 16px; margin-bottom: 4px; font-weight: bold; }
 .service-card p { font-size: 13px; color: var(--text-muted); line-height: 1.4; margin: 0; }
-.service-icon { margin-bottom: 12px; display: block; font-size: 20px; }
+.service-icon { margin-bottom: 12px; display: block; width: 35px; height: 35px; object-fit: contain; }
 
 /* --- Editor --- */
 .editor-container {

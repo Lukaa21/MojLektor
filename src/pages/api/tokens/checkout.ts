@@ -53,6 +53,7 @@ export default async function handler(
       metadata: {
         userId: user.id,
       },
+      customer_email: user.email,
       success_url: `${appUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/buy-tokens?canceled=1`,
     });

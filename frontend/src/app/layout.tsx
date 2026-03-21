@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title: "MojLektor",
   description: "AI lektura i korektura za balkanske jezike.",
   icons: {
-    icon: "/mojlektor_logo.png",
+    icon: "/mojlektor_logo_white_bg.jpg",
   },
 };
 

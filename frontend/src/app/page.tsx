@@ -23,9 +23,9 @@ import { Loader } from "../components/Loader";
 import { ResultDisplay } from "../components/ResultDisplay";
 
 const serviceCards: { value: ServiceType; icon: string; label: string; desc: string }[] = [
-  { value: "LEKTURA" as ServiceType, icon: "✎", label: "Lektura", desc: "Gramatika, pravopis i interpunkcija." },
-  { value: "KOREKTURA" as ServiceType, icon: "✦", label: "Korektura", desc: "Stilska poboljšanja i jasnoća teksta." },
-  { value: "BOTH" as ServiceType, icon: "✯", label: "Kombinovano", desc: "Potpuna obrada i rafiniranje teksta." },
+  { value: "LEKTURA" as ServiceType, icon: "/lektura.png", label: "Lektura", desc: "Gramatika, pravopis i interpunkcija." },
+  { value: "KOREKTURA" as ServiceType, icon: "/korektura.png", label: "Korektura", desc: "Stilska poboljšanja i jasnoća teksta." },
+  { value: "BOTH" as ServiceType, icon: "/lektura+korektura.png", label: "Kombinovano", desc: "Potpuna obrada i rafiniranje teksta." },
 ];
 
 const languageChips: { value: Language; label: string }[] = [
@@ -310,7 +310,7 @@ export default function Home() {
           Vratite snagu svojim riječima.
         </h1>
         <div style={{ display: "flex", justifyContent: "center", gap: 40, marginTop: 24 }}>
-          {["Podrška za 4 jezika", "Reverzibilne izmjene", "Automatska obrada"].map(
+          {["Podrška za 4 jezika", "Reverzibilne izmjene", "Automatskat obrada"].map(
             (feature) => (
               <span
                 key={feature}
@@ -356,7 +356,7 @@ export default function Home() {
               className={`service-card${serviceType === card.value ? " active" : ""}`}
               onClick={() => setServiceType(card.value)}
             >
-              <span className="service-icon">{card.icon}</span>
+              <img src={card.icon} alt={card.label} className="service-icon" />
               <h3>{card.label}</h3>
               <p>{card.desc}</p>
             </button>
