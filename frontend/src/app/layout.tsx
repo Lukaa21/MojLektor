@@ -46,9 +46,46 @@ export default function RootLayout({
         className={`${jakarta.variable} ${newsreader.variable} antialiased`}
       >
         <TokenBalanceProvider>
-          <div className="min-h-screen">
+          <div className="min-h-screen flex flex-col">
             <Navbar />
-            {children}
+            <main style={{ flex: 1 }}>{children}</main>
+            <footer
+              style={{
+                borderTop: "1px solid var(--border-light)",
+                padding: "32px 24px",
+                display: "flex",
+                justifyContent: "center",
+                gap: "32px",
+                maxWidth: 960,
+                margin: "0 auto",
+                width: "100%",
+              }}
+            >
+              <a
+                href="/privacy-policy"
+                style={{
+                  color: "var(--text-muted)",
+                  fontSize: 13,
+                  textDecoration: "none",
+                  fontWeight: 500,
+                  transition: "color 0.2s",
+                }}
+              >
+                Privatnost
+              </a>
+              <a
+                href="/terms"
+                style={{
+                  color: "var(--text-muted)",
+                  fontSize: 13,
+                  textDecoration: "none",
+                  fontWeight: 500,
+                  transition: "color 0.2s",
+                }}
+              >
+                Uslovi korišćenja
+              </a>
+            </footer>
           </div>
         </TokenBalanceProvider>
       </body>

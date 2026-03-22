@@ -111,7 +111,7 @@ export default function TestPage() {
           textAlign: "center",
         }}
       >
-        Demo režim – testirajte funkcionalnost bez potrošnje tokena.
+        Demo režim – testirajte funkcionalnost potpuno besplatno, bez potrošnje tokena.
       </div>
 
       {/* Section 1 — Intro */}
@@ -128,7 +128,7 @@ export default function TestPage() {
           Demo obrada teksta
         </h1>
         <p style={{ color: "var(--text-muted)", fontSize: 15 }}>
-          Odaberite uslugu i vrstu teksta, pa pokrenite obradu.
+          Odaberite uslugu i vrstu teksta, pa pokrenite obradu potpuno besplatno.
         </p>
       </section>
 
@@ -154,7 +154,7 @@ export default function TestPage() {
       {/* Chip selectors */}
       <section style={{ display: "flex", gap: 40, marginBottom: 32, flexWrap: "wrap" }}>
         <div>
-          <div className="selector-label">Tip teksta</div>
+          <div className="selector-label">Vrsta teksta</div>
           <div className="chip-group">
             {textTypeChips.map((chip) => (
               <button
@@ -169,7 +169,7 @@ export default function TestPage() {
           </div>
         </div>
         <div>
-          <div className="selector-label">Varijanta jezika</div>
+          <div className="selector-label">Jezik</div>
           <div className="chip-group">
             <span
               className="chip active"

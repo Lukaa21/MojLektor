@@ -173,11 +173,11 @@ export default function Home() {
       const data = file
         ? await submitUploadedFile(file, serviceType, textType, language as Language)
         : await processCorrectionRequest({
-            rawText: trimmedText,
-            serviceType,
-            textType,
-            language: language as Language,
-          });
+          rawText: trimmedText,
+          serviceType,
+          textType,
+          language: language as Language,
+        });
 
       setOriginalText(data.original);
       setProcessedText(data.edited);
@@ -255,11 +255,11 @@ export default function Home() {
       const data = file
         ? await submitEstimateFromUploadedFile(file, serviceType, textType, language as Language)
         : await postJson<EstimateResponse>("/api/estimate", {
-            rawText: trimmedText,
-            serviceType,
-            textType,
-            language,
-          });
+          rawText: trimmedText,
+          serviceType,
+          textType,
+          language,
+        });
 
       if (file && data.rawText) {
         setRawText(data.rawText);

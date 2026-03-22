@@ -9,7 +9,7 @@ import { useTokenBalance } from "../context/TokenBalanceContext";
 
 const navLinks = [
   { name: "Početna", href: "/" },
-  { name: "Test", href: "/test" },
+  { name: "Demo", href: "/test" },
   { name: "Kupi tokene", href: "/buy-tokens" },
 ];
 
