@@ -22,10 +22,10 @@ import { ErrorMessage } from "../components/Error";
 import { Loader } from "../components/Loader";
 import { ResultDisplay } from "../components/ResultDisplay";
 
-const serviceCards: { value: ServiceType; icon: string; label: string; desc: string }[] = [
-  { value: "LEKTURA" as ServiceType, icon: "/lektura.png", label: "Lektura", desc: "Gramatika, pravopis i interpunkcija." },
-  { value: "KOREKTURA" as ServiceType, icon: "/korektura.png", label: "Korektura", desc: "Stilska poboljšanja i jasnoća teksta." },
-  { value: "BOTH" as ServiceType, icon: "/lektura+korektura.png", label: "Kombinovano", desc: "Potpuna obrada i rafiniranje teksta." },
+const serviceCards: { value: ServiceType; icon: string; label: string; desc: string; badgeText: string; badgeClass: "accent" | "muted" }[] = [
+  { value: "LEKTURA" as ServiceType, icon: "/lektura.png", label: "Lektura", desc: "Gramatika, pravopis i interpunkcija.", badgeText: "1 token = 2 karaktera", badgeClass: "accent" },
+  { value: "KOREKTURA" as ServiceType, icon: "/korektura.png", label: "Korektura", desc: "Stilska poboljšanja i jasnoća teksta.", badgeText: "1 token = 2 karaktera", badgeClass: "accent" },
+  { value: "BOTH" as ServiceType, icon: "/lektura+korektura.png", label: "Kombinovano", desc: "Potpuna obrada i rafiniranje teksta.", badgeText: "1 token = 1 karakter", badgeClass: "muted" },
 ];
 
 const languageChips: { value: Language; label: string }[] = [
@@ -356,6 +356,7 @@ export default function Home() {
               className={`service-card${serviceType === card.value ? " active" : ""}`}
               onClick={() => setServiceType(card.value)}
             >
+              <div className={`service-badge ${card.badgeClass}`}>{card.badgeText}</div>
               <img src={card.icon} alt={card.label} className="service-icon" />
               <h3>{card.label}</h3>
               <p>{card.desc}</p>
