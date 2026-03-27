@@ -52,6 +52,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
   const [batchInstances, setBatchInstances] = useState<BatchInstance[]>([]);
   const [selectedBatchIds, setSelectedBatchIds] = useState<Set<string>>(new Set());
   const [batchOpen, setBatchOpen] = useState(false);
+  const [showClean, setShowClean] = useState(false);
   const longPressTimerRef = useRef<number | null>(null);
   const skipClickChangeRef = useRef<string | null>(null);
 
@@ -239,7 +240,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
         <div className="selector-label">Rezultat i korekcije</div>
 
         <div className="diff-box" style={{ position: "relative" }}>
-          {/* Copy icon – top-right */}
+          {/* Copy button – top-right */}
           <button
             type="button"
             onClick={copyText}
@@ -247,7 +248,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
             style={{
               position: "absolute",
               top: 12,
-              right: 12,
+              right: 48,
               background: "none",
               border: "none",
               cursor: "pointer",
@@ -264,66 +265,116 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
             )}
           </button>
 
-          {/* Inline diff content */}
-          {diff.map((op, idx) => {
-            if (op.type === "unchanged") {
-              return <span key={idx}>{op.value}</span>;
-            }
+          {/* Clean/Diff toggle button – top-right next to copy */}
+          <button
+            type="button"
+            onClick={() => setShowClean(!showClean)}
+            aria-label={showClean ? "Pokaži razlike" : "Pokaži čist tekst"}
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 6,
+              borderRadius: "var(--radius-md)",
+              color: showClean ? "var(--accent)" : "var(--text-ghost)",
+              transition: "color 0.2s",
+            }}
+            title={showClean ? "Pokaži razlike" : "Pokaži čist tekst"}
+          >
+            {showClean ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="12 3 20 7.5 20 16.5 12 21 4 16.5 4 7.5 12 3"></polyline>
+                <polyline points="12 12 20 7.5"></polyline>
+                <polyline points="12 12 12 21"></polyline>
+                <polyline points="12 12 4 7.5"></polyline>
+              </svg>
+            )}
+          </button>
 
-            const change = diffChangeMap.get(idx);
-            const isReverted = change?.status === "reverted";
-            const isPreview = change ? previewIds.has(change.id) : false;
+          {/* Content: Clean or Diff view */}
+          {showClean ? (
+            <pre style={{ 
+              whiteSpace: "pre-wrap", 
+              wordWrap: "break-word", 
+              margin: 0,
+              fontFamily: "var(--font-serif)",
+              fontSize: 19,
+              lineHeight: 1.8,
+              color: "var(--text-main)",
+            }}>
+              {renderedText}
+            </pre>
+          ) : (
+            <div>
+              {/* Inline diff content */}
+              {diff.map((op, idx) => {
+                if (op.type === "unchanged") {
+                  return <span key={idx}>{op.value}</span>;
+                }
 
-            if (op.type === "deleted") {
-              return isReverted
-                ? <span key={idx}>{op.value}</span>
-                : <del key={idx}>{op.value}</del>;
-            }
+                const change = diffChangeMap.get(idx);
+                const isReverted = change?.status === "reverted";
+                const isPreview = change ? previewIds.has(change.id) : false;
 
-            if (op.type === "added") {
-              if (isReverted) return null;
-              return (
-                <ins
-                  key={idx}
-                  style={{
-                    cursor: change ? "pointer" : undefined,
-                    transition: "background 0.2s",
-                    background: isPreview ? "rgba(45, 90, 39, 0.15)" : undefined,
-                  }}
-                  onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
-                  onPointerDown={change ? () => startLongPress(change.id) : undefined}
-                  onPointerUp={stopLongPress}
-                  onPointerLeave={stopLongPress}
-                >
-                  {op.value}
-                </ins>
-              );
-            }
+                if (op.type === "deleted") {
+                  return isReverted
+                    ? <span key={idx}>{op.value}</span>
+                    : <del key={idx}>{op.value}</del>;
+                }
 
-            /* modified */
-            if (isReverted) {
-              return <span key={idx}>{op.original}</span>;
-            }
+                if (op.type === "added") {
+                  if (isReverted) return null;
+                  return (
+                    <ins
+                      key={idx}
+                      style={{
+                        cursor: change ? "pointer" : undefined,
+                        transition: "background 0.2s",
+                        background: isPreview ? "rgba(45, 90, 39, 0.15)" : undefined,
+                      }}
+                      onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
+                      onPointerDown={change ? () => startLongPress(change.id) : undefined}
+                      onPointerUp={stopLongPress}
+                      onPointerLeave={stopLongPress}
+                    >
+                      {op.value}
+                    </ins>
+                  );
+                }
 
-            return (
-              <span key={idx}>
-                <del>{op.original}</del>{" "}
-                <ins
-                  style={{
-                    cursor: change ? "pointer" : undefined,
-                    transition: "background 0.2s",
-                    background: isPreview ? "rgba(45, 90, 39, 0.15)" : undefined,
-                  }}
-                  onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
-                  onPointerDown={change ? () => startLongPress(change.id) : undefined}
-                  onPointerUp={stopLongPress}
-                  onPointerLeave={stopLongPress}
-                >
-                  {op.edited}
-                </ins>
-              </span>
-            );
-          })}
+                /* modified */
+                if (isReverted) {
+                  return <span key={idx}>{op.original}</span>;
+                }
+
+                return (
+                  <span key={idx}>
+                    <del>{op.original}</del>{" "}
+                    <ins
+                      style={{
+                        cursor: change ? "pointer" : undefined,
+                        transition: "background 0.2s",
+                        background: isPreview ? "rgba(45, 90, 39, 0.15)" : undefined,
+                      }}
+                      onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
+                      onPointerDown={change ? () => startLongPress(change.id) : undefined}
+                      onPointerUp={stopLongPress}
+                      onPointerLeave={stopLongPress}
+                    >
+                      {op.edited}
+                    </ins>
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <OutputActions outputText={renderedText} />
