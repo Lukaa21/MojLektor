@@ -368,7 +368,7 @@ export default function Home() {
       {/* Section 3 — Chip selectors */}
       <section style={{ display: "flex", gap: 40, marginBottom: 32, flexWrap: "wrap" }}>
         <div>
-          <div className="selector-label">Varijanta jezika</div>
+          <div className="selector-label">Jezik</div>
           <div className="chip-group">
             {languageChips.map((chip) => (
               <button

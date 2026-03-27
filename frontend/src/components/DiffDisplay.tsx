@@ -305,7 +305,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
           {" "}za undo
         </p>
 
-        <div className="diff-box" style={{ position: "relative" }}>
+        <div className="diff-box" style={{ position: "relative", paddingTop: 40 }}>
           {/* Copy button – top-right */}
           <button
             type="button"
