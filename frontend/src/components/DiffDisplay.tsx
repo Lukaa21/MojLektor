@@ -139,11 +139,43 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
 
   const handleSingleRevert = (changeId: string) => {
     const change = changeLookup.get(changeId);
-    if (!change || change.status !== "active") {
+    if (!change) {
       return;
     }
 
-    applyReverts(new Set([changeId]));
+    // Ako je već reverted, vrati ga u active (undo)
+    if (change.status === "reverted") {
+      setChangeState((prev) =>
+        prev.map((c) =>
+          c.id === changeId ? { ...c, status: "active" } : c
+        )
+      );
+
+      setTokenState((prev) =>
+        prev.map((token) => {
+          if (token.changeId !== changeId || token.status !== "reverted") {
+            return token;
+          }
+
+          const chg = changeLookup.get(changeId);
+          if (!chg) {
+            return token;
+          }
+
+          return {
+            ...token,
+            text: chg.modified,
+            status: "active",
+          };
+        })
+      );
+      return;
+    }
+
+    // Inače, revertuj kao prije
+    if (change.status === "active") {
+      applyReverts(new Set([changeId]));
+    }
   };
 
   const handleTokenClick = (event: MouseEvent<HTMLSpanElement>, changeId: string) => {
@@ -261,7 +293,16 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
           >
              zeleni tekst
           </span>
-          {" "}da opovrgneš izmjenu
+          {" "}da opovrgneš,{" "}
+          <span
+            style={{
+              textDecoration: "underline solid",
+              color: "var(--error)",
+            }}
+          >
+            crveni tekst
+          </span>
+          {" "}za undo
         </p>
 
         <div className="diff-box" style={{ position: "relative" }}>
@@ -350,12 +391,38 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
 
                 if (op.type === "deleted") {
                   return isReverted
-                    ? <span key={idx}>{op.value}</span>
+                    ? <span
+                        key={idx}
+                        style={{
+                          textDecoration: "underline solid",
+                          color: "var(--error)",
+                          cursor: change ? "pointer" : undefined,
+                          transition: "background 0.2s",
+                        }}
+                        onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
+                      >
+                        {op.value}
+                      </span>
                     : <del key={idx}>{op.value}</del>;
                 }
 
                 if (op.type === "added") {
-                  if (isReverted) return null;
+                  if (isReverted) {
+                    return (
+                      <span
+                        key={idx}
+                        style={{
+                          textDecoration: "underline solid",
+                          color: "var(--error)",
+                          cursor: "pointer",
+                          transition: "background 0.2s",
+                        }}
+                        onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
+                      >
+                        {op.value}
+                      </span>
+                    );
+                  }
                   return (
                     <ins
                       key={idx}
@@ -376,7 +443,20 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
 
                 /* modified */
                 if (isReverted) {
-                  return <span key={idx}>{op.original}</span>;
+                  return (
+                    <span
+                      key={idx}
+                      style={{
+                        textDecoration: "underline solid",
+                        color: "var(--error)",
+                        cursor: "pointer",
+                        transition: "background 0.2s",
+                      }}
+                      onClick={(e) => handleTokenClick(e, change.id)}
+                    >
+                      {op.original}
+                    </span>
+                  );
                 }
 
                 return (
