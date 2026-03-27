@@ -42,5 +42,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
