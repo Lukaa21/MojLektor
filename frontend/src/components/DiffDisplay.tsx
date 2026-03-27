@@ -239,6 +239,31 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
       >
         <div className="selector-label">Rezultat i korekcije</div>
 
+        <p
+          style={{
+            fontSize: 14,
+            color: "var(--text-main)",
+            marginBottom: 16,
+            margin: "12px 0 16px 0",
+            fontWeight: 500,
+          }}
+          
+        >
+          
+          <span style={{ fontWeight: 700 }}>Hint:</span> Klikni na {" "}
+          <span
+            style={{
+              color: "var(--success)",
+              background: "rgba(45, 90, 39, 0.15)",
+              padding: "2px 6px",
+              borderRadius: "4px",
+            }}
+          >
+             zeleni tekst
+          </span>
+          {" "}da opovrgneš izmjenu
+        </p>
+
         <div className="diff-box" style={{ position: "relative" }}>
           {/* Copy button – top-right */}
           <button
