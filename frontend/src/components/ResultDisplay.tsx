@@ -54,6 +54,8 @@ export const ResultDisplay = ({ processedText, cardCount }: ResultDisplayProps) 
             color: "var(--text-main)",
             outline: "none",
             resize: "vertical",
+            whiteSpace: "pre-wrap",
+            wordWrap: "break-word",
           }}
           aria-label="Procesirani tekst"
         />

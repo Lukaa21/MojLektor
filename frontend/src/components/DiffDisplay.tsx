@@ -378,7 +378,14 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
               {renderedText}
             </pre>
           ) : (
-            <div>
+            <div style={{ 
+              whiteSpace: "pre-wrap", 
+              wordWrap: "break-word",
+              fontFamily: "var(--font-serif)",
+              fontSize: 19,
+              lineHeight: 1.8,
+              color: "var(--text-main)",
+            }}>
               {/* Inline diff content */}
               {diff.map((op, idx) => {
                 if (op.type === "unchanged") {
