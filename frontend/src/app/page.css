@@ -50,10 +50,6 @@
   margin-bottom: var(--section-gap);
 }
 
-.home-actions-btn {
-  /* Button styles inherit from .btn-primary and .btn-secondary */
-}
-
 /* Upload zone dragging styles */
 .upload-zone.dragging {
   border-color: var(--text-ghost);

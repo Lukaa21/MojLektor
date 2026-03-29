@@ -21,6 +21,7 @@ app.use(
   })
 );
 
+app.use("/api/tokens/webhook", express.raw({ type: "application/json" }));
 app.use(express.json({ limit: "2mb" }));
 
 const estimateLimiter = rateLimit({

@@ -31,11 +31,32 @@
 }
 
 .navbar-nav-link {
+  position: relative;
+  display: inline-block;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-muted);
   text-decoration: none;
   transition: color 0.2s;
+  padding-bottom: 6px;
+}
+
+.navbar-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+
+.navbar-nav-link:hover::after,
+.navbar-nav-link.active::after {
+  transform: scaleX(1);
 }
 
 .navbar-nav-link.active {
@@ -60,6 +81,7 @@
 .navbar-logout-btn,
 .navbar-login-link,
 .navbar-register-link {
+  position: relative;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-muted);
@@ -71,10 +93,26 @@
   text-decoration: none;
 }
 
-.navbar-logout-btn:hover,
+.navbar-logout-btn::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+
+.navbar-logout-btn:hover::after {
+  transform: scaleX(1);
+}
+
 .navbar-login-link:hover,
 .navbar-register-link:hover {
-  color: var(--text-main);
+  color: #fff;
 }
 
 .navbar-register-link {

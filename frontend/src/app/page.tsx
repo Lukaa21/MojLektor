@@ -26,7 +26,7 @@ import "./page.css";
 const serviceCards: { value: ServiceType; icon: string; label: string; desc: string; badgeText: string; badgeClass: "accent" | "muted" }[] = [
   { value: "LEKTURA" as ServiceType, icon: "/lektura.png", label: "Lektura", desc: "Gramatika, pravopis i interpunkcija.", badgeText: "1 token = 2 karaktera", badgeClass: "accent" },
   { value: "KOREKTURA" as ServiceType, icon: "/korektura.png", label: "Korektura", desc: "Stilska poboljšanja i jasnoća teksta.", badgeText: "1 token = 2 karaktera", badgeClass: "accent" },
-  { value: "BOTH" as ServiceType, icon: "/lektura+korektura.png", label: "Kombinovano", desc: "Potpuna obrada i rafiniranje teksta.", badgeText: "1 token = 1 karakter", badgeClass: "muted" },
+  { value: "BOTH" as ServiceType, icon: "/lektura+korektura.png", label: "Kombinovano", desc: "Potpuna obrada teksta.", badgeText: "1 token = 1 karakter", badgeClass: "muted" },
 ];
 
 const languageChips: { value: Language; label: string }[] = [

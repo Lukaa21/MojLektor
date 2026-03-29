@@ -34,7 +34,7 @@
     "vitest": "^4.1.2"
   },
   "scripts": {
-    "build": "npm --prefix frontend run build && next build",
+    "build": "tsc",
     "dev:backend": "tsx src/index.ts",
     "dev:process-api": "next dev -p 3002",
     "dev:frontend": "npm --prefix frontend run dev",
@@ -44,7 +44,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "start": "node dist/index.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -15,9 +15,9 @@ import type { DiffOp, ReversibleChange, ReversibleToken } from "../../lib/api";
 import "./page.css";
 
 const serviceCards: { value: ServiceType; icon: string; label: string; desc: string }[] = [
-  { value: "LEKTURA" as ServiceType, icon: "/lektura.png", label: "Lektura", desc: "Stilska i jezička doraženost" },
-  { value: "KOREKTURA" as ServiceType, icon: "/korektura.png", label: "Korektura", desc: "Pravopis, interpunkcija, greške" },
-  { value: "BOTH" as ServiceType, icon: "/lektura+korektura.png", label: "Kombinovano", desc: "Sve u jednom prolazu" },
+  { value: "LEKTURA" as ServiceType, icon: "/lektura.png", label: "Lektura", desc: "Gramatika, pravopis i interpunkcija." },
+  { value: "KOREKTURA" as ServiceType, icon: "/korektura.png", label: "Korektura", desc: "Stilska poboljšanja i jasnoća teksta." },
+  { value: "BOTH" as ServiceType, icon: "/lektura+korektura.png", label: "Kombinovano", desc: "Potpuna obrada teksta." },
 ];
 
 const textTypeChips = [

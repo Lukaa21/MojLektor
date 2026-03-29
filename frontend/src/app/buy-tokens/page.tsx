@@ -148,7 +148,7 @@ export default function BuyTokensPage() {
             marginBottom: 16,
           }}
         >
-          Jednostavna dopuna.
+          Jednostavna dopuna
         </h1>
         <p style={{ color: "var(--text-muted)" }}>
           Bez pretplate, bez obaveza. Koristite tokene kada su vam potrebni.
