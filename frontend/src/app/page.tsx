@@ -301,21 +301,6 @@ export default function Home() {
         <h1 className="home-intro-title">
           Vratite snagu svojim riječima.
         </h1>
-        <div className="home-intro-features">
-          {["Podrška za 4 jezika", "Reverzibilne izmjene", "Automatskat obrada"].map(
-            (feature) => (
-              <span
-                key={feature}
-                className="home-intro-feature"
-              >
-                <span className="home-intro-feature-badge">
-                  ✓
-                </span>
-                {feature}
-              </span>
-            )
-          )}
-        </div>
       </section>
 
       {/* Section 2 — Service type selector */}

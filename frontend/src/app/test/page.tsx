@@ -12,6 +12,7 @@ import {
   type CorrectionRequestInput,
 } from "../../lib/correctionRequest";
 import type { DiffOp, ReversibleChange, ReversibleToken } from "../../lib/api";
+import "./page.css";
 
 const serviceCards: { value: ServiceType; icon: string; label: string; desc: string }[] = [
   { value: "LEKTURA" as ServiceType, icon: "/lektura.png", label: "Lektura", desc: "Stilska i jezička doraženost" },

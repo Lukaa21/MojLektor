@@ -116,24 +116,26 @@ body {
 }
 
 /* --- Chips --- */
+
 .chip-group {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
   flex-wrap: wrap;
+  gap: 10px; /* ovo važi i za desktop row */
+  margin-bottom: 24px;
 }
 
 .chip {
-  padding: 6px 18px;
-  border-radius: 99px;
+  padding: 10px;
+  border-radius: var(--radius-lg);
   background: white;
   border: 1.5px solid var(--border-light);
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--text-main);
   cursor: pointer;
   font-family: inherit;
   transition: all 0.3s var(--ease);
+  text-align: center;
 }
 
 .chip:hover {
@@ -142,8 +144,9 @@ body {
 
 .chip.active {
   background: var(--accent);
-  color: white;
+  color: #fff;
   border-color: var(--accent);
+  font-weight: 600;
 }
 
 /* --- Service Cards --- */
@@ -302,7 +305,6 @@ body {
 }
 
 .status-badge {
-  padding: 4px 10px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 700;
@@ -413,6 +415,43 @@ body {
   color: var(--accent-hover);
 }
 
+/* Mobile responsive - export footer */
+@media (max-width: 768px) {
+  .export-footer {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .export-options {
+    gap: 12px;
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .export-label {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .format-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    flex: 1;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .btn-save-minimal {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
 /* --- Pricing --- */
 .intro-section {
   text-align: center;
@@ -513,6 +552,34 @@ body {
   border-color: var(--accent);
 }
 
+/* Mobile responsive - auth forms */
+@media (max-width: 768px) {
+  .auth-card {
+    margin: 40px 16px;
+    padding: 32px 20px;
+  }
+
+  .auth-card h2 {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group input {
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .login-submit-btn,
+  .register-submit-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
 /* --- Alerts / Messages --- */
 .alert {
   margin-top: 16px;
@@ -574,4 +641,11 @@ body {
     flex-direction: column;
     gap: 16px;
   }
+
+  .chip-group {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
 }

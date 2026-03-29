@@ -1,0 +1,23 @@
+/* Demo Page (test/page.tsx) Styles */
+
+.test-page-wrapper {
+  padding-top: 60px;
+  padding-bottom: 80px;
+}
+
+.test-page-auth-checking {
+  padding-top: 80px;
+  text-align: center;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .test-page-wrapper {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  .test-page-auth-checking {
+    padding-top: 40px;
+  }
+}

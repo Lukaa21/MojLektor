@@ -56,3 +56,27 @@
 .register-login-link a:hover {
   text-decoration: underline;
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .register-page-subtitle {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .register-password-header,
+  .register-confirmation-header {
+    margin-bottom: 8px;
+  }
+
+  .register-show-password-btn,
+  .register-show-password-confirmation-btn {
+    padding: 2px;
+  }
+
+  .register-error-message {
+    padding: 10px 14px;
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+}
