@@ -346,16 +346,19 @@ export const consumeTokensForProcessing = async (
   }
 };
 
-/** Restores tokens after AI processing failed (caller must have successfully charged first). */
+/**
+ * Restores tokens after AI processing failed.
+ * Returns true only when user balance increment was persisted.
+ */
 export const refundTokensAfterFailedProcessing = async (
   userId: string,
   amount: number,
   endpoint: string
-) => {
+): Promise<boolean> => {
   ensureDatabaseConfigured();
   const refund = Math.max(0, Math.floor(amount));
   if (!refund) {
-    return;
+    return true;
   }
 
   const id = normalizeUserId(userId);
@@ -364,31 +367,53 @@ export const refundTokensAfterFailedProcessing = async (
     const updated = ensureMemoryUser(id);
     updated.tokenBalance += refund;
     inMemoryUsers.set(updated.id, updated);
-    return;
+    return true;
   }
 
-  try {
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      await tx.user.update({
+  // Keep balance restoration independent from audit logging.
+  // If tokenUsage logging fails, user must still receive refunded tokens.
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await prisma.user.update({
         where: { id },
         data: { tokenBalance: { increment: refund } },
       });
-      await tx.tokenUsage.create({
-        data: {
+
+      try {
+        await prisma.tokenUsage.create({
+          data: {
+            userId: id,
+            endpoint: `${endpoint}#refund`,
+            charactersUsed: 0,
+            tokensDeducted: -refund,
+          },
+        });
+      } catch {
+        console.error("[tokens] Refund audit logging failed", {
           userId: id,
-          endpoint: `${endpoint}#refund`,
-          charactersUsed: 0,
-          tokensDeducted: -refund,
-        },
+          refund,
+          endpoint,
+        });
+      }
+
+      return true;
+    } catch {
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 100));
+        continue;
+      }
+
+      console.error("[tokens] Refund balance update failed", {
+        userId: id,
+        refund,
+        endpoint,
       });
-    });
-  } catch {
-    console.error("[tokens] Refund failed after processing error", {
-      userId: id,
-      refund,
-      endpoint,
-    });
+      return false;
+    }
   }
+
+  return false;
 };
 
 export const getEstimateForTokens = async (userId: string, requiredTokens: number) => {

@@ -87,7 +87,20 @@ export default async function handler(
     processedText = result.edited;
     cardCount = result.cardCount;
   } catch (err) {
-    await refundTokensAfterFailedProcessing(user.id, tokenCost, "/api/process");
+    const refunded = await refundTokensAfterFailedProcessing(
+      user.id,
+      tokenCost,
+      "/api/process"
+    );
+    if (!refunded) {
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: "REFUND_FAILED",
+          message: "AI obrada nije uspjela, a refund tokena trenutno nije moguc. Pokusajte ponovo uskoro.",
+        },
+      });
+    }
     return res.status(500).json({
       success: false,
       error: {

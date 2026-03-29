@@ -35,7 +35,7 @@ vi.mock("../src/tokens/service", async (importOriginal) => {
       remainingBalance: 999000,
       requiredTokens: 500,
     })),
-    refundTokensAfterFailedProcessing: vi.fn(async () => undefined),
+    refundTokensAfterFailedProcessing: vi.fn(async () => true),
   };
 });
 
@@ -195,6 +195,28 @@ describe("POST /api/process", () => {
     expect(json.success).toBe(false);
     expect(json.error.code).toBe("LLM_ERROR");
     expect(vi.mocked(refundTokensAfterFailedProcessing)).toHaveBeenCalled();
+  });
+
+  it("returns REFUND_FAILED when refund cannot be persisted", async () => {
+    const mockedGenerate = vi.mocked(generate);
+    mockedGenerate.mockRejectedValueOnce(new Error("LLM down"));
+    vi.mocked(refundTokensAfterFailedProcessing).mockResolvedValueOnce(false);
+
+    const mock = await callHandler({
+      rawText: "Test.",
+      serviceType: ServiceType.LEKTURA,
+      textType: "akademski rad",
+      language: "srpski",
+    });
+
+    const json = mock.getJson() as {
+      success: boolean;
+      error: { code: string; message: string };
+    };
+
+    expect(mock.getStatus()).toBe(500);
+    expect(json.success).toBe(false);
+    expect(json.error.code).toBe("REFUND_FAILED");
   });
 });
 
