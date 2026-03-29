@@ -11,6 +11,17 @@ import {
 
 const processor = new AIProcessor();
 
+/** Upper bound on model output length vs input (defense against runaway / injected replies). */
+const assertReasonableOutputSize = (sourceChars: number, outputChars: number) => {
+  const cap = Math.min(
+    200_000,
+    Math.max(sourceChars * 8, sourceChars + 25_000)
+  );
+  if (outputChars > cap) {
+    throw new Error("LLM_OUTPUT_BOUNDS");
+  }
+};
+
 export const processText = async (
   content: string,
   serviceType: ServiceType,
@@ -31,6 +42,7 @@ export const processText = async (
   };
 
   const edited = await processor.process(job, cards);
+  assertReasonableOutputSize(content.length, edited.length);
 
   return {
     edited,

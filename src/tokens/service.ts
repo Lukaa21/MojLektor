@@ -18,8 +18,16 @@ const inMemoryUsersByEmail = new Map<string, string>();
 const inMemoryPurchases = new Set<string>();
 const inMemoryProcessedStripeEvents = new Set<string>();
 
+if (
+  process.env.NODE_ENV === "production" &&
+  process.env.USE_IN_MEMORY_TOKENS === "1"
+) {
+  throw new Error("USE_IN_MEMORY_TOKENS cannot be enabled in production.");
+}
+
 const useMemoryStore =
-  process.env.NODE_ENV === "test" || process.env.USE_IN_MEMORY_TOKENS === "1";
+  process.env.NODE_ENV !== "production" &&
+  (process.env.NODE_ENV === "test" || process.env.USE_IN_MEMORY_TOKENS === "1");
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
 const defaultBalance = process.env.NODE_ENV === "test" ? 1000000 : 0;
@@ -335,6 +343,51 @@ export const consumeTokensForProcessing = async (
     };
   } catch {
     throw new Error("Failed to consume tokens in database.");
+  }
+};
+
+/** Restores tokens after AI processing failed (caller must have successfully charged first). */
+export const refundTokensAfterFailedProcessing = async (
+  userId: string,
+  amount: number,
+  endpoint: string
+) => {
+  ensureDatabaseConfigured();
+  const refund = Math.max(0, Math.floor(amount));
+  if (!refund) {
+    return;
+  }
+
+  const id = normalizeUserId(userId);
+
+  if (useMemoryStore) {
+    const updated = ensureMemoryUser(id);
+    updated.tokenBalance += refund;
+    inMemoryUsers.set(updated.id, updated);
+    return;
+  }
+
+  try {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.user.update({
+        where: { id },
+        data: { tokenBalance: { increment: refund } },
+      });
+      await tx.tokenUsage.create({
+        data: {
+          userId: id,
+          endpoint: `${endpoint}#refund`,
+          charactersUsed: 0,
+          tokensDeducted: -refund,
+        },
+      });
+    });
+  } catch {
+    console.error("[tokens] Refund failed after processing error", {
+      userId: id,
+      refund,
+      endpoint,
+    });
   }
 };
 

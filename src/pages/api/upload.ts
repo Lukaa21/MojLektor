@@ -12,6 +12,7 @@ import {
 import { JobStatus, Language, ServiceType } from "../../core/models";
 import {
   consumeTokensForProcessing,
+  refundTokensAfterFailedProcessing,
 } from "../../tokens/service";
 import { processRateLimit } from "../../middleware/rateLimit";
 import { validateProcessInput } from "../../validation/processInput";
@@ -115,30 +116,10 @@ export default async function handler(
       });
     }
 
-    let edited: string;
-    let cardCount: number;
-    try {
-      const result = await processText(
-        original,
-        serviceType,
-        textType,
-        language
-      );
-      edited = result.edited;
-      cardCount = result.cardCount;
-    } catch (aiError) {
-      return res.status(500).json({
-        success: false,
-        error: {
-          code: "LLM_ERROR",
-          message: "Doslo je do greske prilikom AI obrade.",
-        },
-      });
-    }
-
+    const tokenCost = calculateTokenCost(original.length, serviceType);
     const tokenCheck = await consumeTokensForProcessing(
       user.id,
-      calculateTokenCost(original.length, serviceType),
+      tokenCost,
       "/api/upload"
     );
 
@@ -156,6 +137,28 @@ export default async function handler(
         nextLowerPackage: tokenCheck.nextLowerPackage,
         differenceToLowerPackage: tokenCheck.differenceToLowerPackage,
         redirectPath: "/buy-tokens",
+      });
+    }
+
+    let edited: string;
+    let cardCount: number;
+    try {
+      const result = await processText(
+        original,
+        serviceType,
+        textType,
+        language
+      );
+      edited = result.edited;
+      cardCount = result.cardCount;
+    } catch (aiError) {
+      await refundTokensAfterFailedProcessing(user.id, tokenCost, "/api/upload");
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: "LLM_ERROR",
+          message: "Doslo je do greske prilikom AI obrade.",
+        },
       });
     }
 

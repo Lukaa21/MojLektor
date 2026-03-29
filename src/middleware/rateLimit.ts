@@ -70,6 +70,14 @@ export const authRateLimit = createRateLimit("auth", {
   maxRequests: 10,
 });
 
+const decodeSessionCookieValue = (raw: string) => {
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+};
+
 export const processRateLimit = createRateLimit("process", {
   windowMs: 60_000,
   maxRequests: 5,
@@ -78,7 +86,10 @@ export const processRateLimit = createRateLimit("process", {
     const match = cookie.match(/ml_session=([^;]+)/);
     if (match) {
       try {
-        const decoded = jwt.verify(match[1], process.env.AUTH_JWT_SECRET!) as { sub: string };
+        const decoded = jwt.verify(
+          decodeSessionCookieValue(match[1]),
+          process.env.AUTH_JWT_SECRET!
+        ) as { sub: string };
         return decoded.sub;
       } catch {
         return getClientIp(req);
@@ -101,7 +112,10 @@ export const generalRateLimit = createRateLimit("general", {
     const match = cookie.match(/ml_session=([^;]+)/);
     if (match) {
       try {
-        const decoded = jwt.verify(match[1], process.env.AUTH_JWT_SECRET!) as { sub: string };
+        const decoded = jwt.verify(
+          decodeSessionCookieValue(match[1]),
+          process.env.AUTH_JWT_SECRET!
+        ) as { sub: string };
         return decoded.sub;
       } catch {
         return getClientIp(req);

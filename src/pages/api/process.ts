@@ -3,7 +3,10 @@ import { requireNextAuthUser } from "../../auth/guards";
 import { processText } from "../../ai/processText";
 import { createFullDiff } from "../../core/diff";
 import { JobStatus, Language, ServiceType } from "../../core/models";
-import { consumeTokensForProcessing } from "../../tokens/service";
+import {
+  consumeTokensForProcessing,
+  refundTokensAfterFailedProcessing,
+} from "../../tokens/service";
 import { processRateLimit } from "../../middleware/rateLimit";
 import { validateProcessInput } from "../../validation/processInput";
 import { calculateTokenCost } from "../../core/tokenCost";
@@ -49,30 +52,10 @@ export default async function handler(
     return;
   }
 
-  let processedText: string;
-  let cardCount: number;
-  try {
-    const result = await processText(
-      rawText,
-      serviceType,
-      textType,
-      language
-    );
-    processedText = result.edited;
-    cardCount = result.cardCount;
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      error: {
-        code: "LLM_ERROR",
-        message: "Doslo je do greske prilikom AI obrade.",
-      },
-    });
-  }
-
+  const tokenCost = calculateTokenCost(rawText.length, serviceType);
   const tokenCheck = await consumeTokensForProcessing(
     user.id,
-    calculateTokenCost(rawText.length, serviceType),
+    tokenCost,
     "/api/process"
   );
 
@@ -89,6 +72,28 @@ export default async function handler(
       nextLowerPackage: tokenCheck.nextLowerPackage,
       differenceToLowerPackage: tokenCheck.differenceToLowerPackage,
       redirectPath: "/buy-tokens",
+    });
+  }
+
+  let processedText: string;
+  let cardCount: number;
+  try {
+    const result = await processText(
+      rawText,
+      serviceType,
+      textType,
+      language
+    );
+    processedText = result.edited;
+    cardCount = result.cardCount;
+  } catch (err) {
+    await refundTokensAfterFailedProcessing(user.id, tokenCost, "/api/process");
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: "LLM_ERROR",
+        message: "Doslo je do greske prilikom AI obrade.",
+      },
     });
   }
 

@@ -3,7 +3,12 @@ import { describe, expect, it, vi } from "vitest";
 import handler from "../src/pages/api/process";
 import { AIProcessor } from "../src/ai/processor";
 import { generate } from "../src/ai/llmAdapter";
+import { refundTokensAfterFailedProcessing } from "../src/tokens/service";
 import { JobStatus, ServiceType, type Job } from "../src/core/models";
+import {
+  USER_SOURCE_END,
+  USER_SOURCE_START,
+} from "../src/ai/prompts";
 
 vi.mock("../src/ai/llmAdapter", () => ({
   generate: vi.fn(async (prompt: string) => prompt),
@@ -25,7 +30,12 @@ vi.mock("../src/tokens/service", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/tokens/service")>();
   return {
     ...actual,
-    consumeTokensForProcessing: vi.fn(async () => ({ ok: true, remaining: 999000 })),
+    consumeTokensForProcessing: vi.fn(async () => ({
+      ok: true as const,
+      remainingBalance: 999000,
+      requiredTokens: 500,
+    })),
+    refundTokensAfterFailedProcessing: vi.fn(async () => undefined),
   };
 });
 
@@ -80,7 +90,9 @@ describe("POST /api/process", () => {
     };
 
     expect(mock.getStatus()).toBe(200);
-    expect(json.edited).toContain("TEKST:\n" + rawText);
+    expect(json.edited).toContain(USER_SOURCE_START);
+    expect(json.edited).toContain(USER_SOURCE_END);
+    expect(json.edited).toContain(rawText);
     expect(json.cardCount).toBe(1);
     expect(json.status).toBe("DONE");
   });
@@ -127,10 +139,12 @@ describe("POST /api/process", () => {
       cardCount: number;
     };
 
+    const wrapSeg = (s: string) =>
+      `${USER_SOURCE_START}\n${s}\n${USER_SOURCE_END}`;
     expect(mock.getStatus()).toBe(200);
     expect(json.cardCount).toBe(2);
-    expect(json.edited.indexOf("TEKST:\n" + firstChunk)).toBeLessThan(
-      json.edited.indexOf("TEKST:\n" + secondChunk)
+    expect(json.edited.indexOf(wrapSeg(firstChunk))).toBeLessThan(
+      json.edited.indexOf(wrapSeg(secondChunk))
     );
   });
 
@@ -161,7 +175,7 @@ describe("POST /api/process", () => {
     expect(invalidLanguage.getStatus()).toBe(400);
   });
 
-  it("returns LLM_ERROR when adapter fails", async () => {
+  it("returns LLM_ERROR when adapter fails and refunds tokens", async () => {
     const mockedGenerate = vi.mocked(generate);
     mockedGenerate.mockRejectedValueOnce(new Error("LLM down"));
 
@@ -180,6 +194,7 @@ describe("POST /api/process", () => {
     expect(mock.getStatus()).toBe(500);
     expect(json.success).toBe(false);
     expect(json.error.code).toBe("LLM_ERROR");
+    expect(vi.mocked(refundTokensAfterFailedProcessing)).toHaveBeenCalled();
   });
 });
 
@@ -206,6 +221,8 @@ describe("AIProcessor", () => {
     const output = await processor.process(job, cards);
 
     expect(output).toContain("ULOGA:");
-    expect(output.indexOf("TEKST:\nA")).toBeLessThan(output.indexOf("TEKST:\nB"));
+    expect(output.indexOf(`${USER_SOURCE_START}\nA`)).toBeLessThan(
+      output.indexOf(`${USER_SOURCE_START}\nB`)
+    );
   });
 });

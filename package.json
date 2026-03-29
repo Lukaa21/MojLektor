@@ -1,6 +1,9 @@
 {
+  "overrides": {
+    "effect": "^3.20.0"
+  },
   "dependencies": {
-    "@prisma/client": "^6.5.0",
+    "@prisma/client": "^6.19.0",
     "@types/express": "^5.0.6",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
@@ -11,7 +14,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mammoth": "^1.8.0",
-    "next": "^16.1.6",
+    "next": "^16.2.1",
     "pdf-parse": "^1.1.1",
     "stripe": "^18.0.0"
   },
@@ -25,10 +28,10 @@
     "@types/pdfmake": "^0.3.1",
     "@types/react": "19.2.14",
     "concurrently": "^8.2.2",
-    "prisma": "^6.5.0",
+    "prisma": "^6.19.0",
     "tsx": "^4.19.2",
     "typescript": "5.9.3",
-    "vitest": "^2.1.9"
+    "vitest": "^4.1.2"
   },
   "scripts": {
     "build": "npm --prefix frontend run build && next build",
