@@ -14,6 +14,8 @@ model User {
   passwordHash     String?
   tokenBalance     Int             @default(0)
   stripeCustomerId String?         @unique
+  loginAttempts    Int             @default(0)
+  lockedUntil      DateTime?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   purchases        TokenPurchase[]

@@ -42,7 +42,7 @@ export const calculateEstimate = ({
     };
   }
 
-  const validation = validateProcessInput(serviceType, language);
+  const validation = validateProcessInput(serviceType, language, textType);
   if (!validation.ok) {
     return {
       ok: false as const,
@@ -65,7 +65,6 @@ export const calculateEstimate = ({
     ok: true as const,
     status: 200,
     body: {
-      rawText,
       requiredTokens: estimate.requiredTokens,
       currentBalance: estimate.currentBalance,
       canProcess: estimate.canProcess,
@@ -137,6 +136,10 @@ export const estimateHandler = async (req: Request, res: Response) => {
         userId,
       });
 
+      // For file uploads the client needs the extracted rawText to populate the editor.
+      if (result.ok) {
+        return res.status(result.status).json({ ...result.body, rawText });
+      }
       return res.status(result.status).json(result.body);
     } catch (error) {
       if (error instanceof FileExtractionError) {

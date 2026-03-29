@@ -194,7 +194,7 @@ export default function Home() {
       }
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        router.push("/test");
+        router.push("/login");
         return;
       }
 

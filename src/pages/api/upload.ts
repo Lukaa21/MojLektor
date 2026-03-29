@@ -93,7 +93,7 @@ export default async function handler(
       });
     }
 
-    const validation = validateProcessInput(serviceType, language);
+    const validation = validateProcessInput(serviceType, language, textType);
     if (!validation.ok) {
       return res.status(400).json({
         success: false,

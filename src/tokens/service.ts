@@ -537,3 +537,92 @@ export const getPackageByStripePriceId = (stripePriceId: string) =>
 
 export const getPackageForRequiredTokens = (requiredTokens: number) =>
   getRequiredPackage(requiredTokens);
+
+// ─── Account lockout ──────────────────────────────────────────────────────────
+
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
+/**
+ * Records a failed login attempt for the given email.
+ * Returns the updated loginAttempts count and whether the account is now locked.
+ */
+export const recordFailedLogin = async (
+  email: string
+): Promise<{ locked: boolean; lockedUntil: Date | null }> => {
+  if (useMemoryStore) {
+    return { locked: false, lockedUntil: null };
+  }
+
+  const normalizedEmail = normalizeEmail(email);
+  try {
+    const updated = await prisma.user.update({
+      where: { email: normalizedEmail },
+      data: { loginAttempts: { increment: 1 } },
+      select: { loginAttempts: true, lockedUntil: true },
+    });
+
+    if (updated.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+      const lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
+      await prisma.user.update({
+        where: { email: normalizedEmail },
+        data: { lockedUntil },
+      });
+      return { locked: true, lockedUntil };
+    }
+
+    return { locked: false, lockedUntil: null };
+  } catch {
+    return { locked: false, lockedUntil: null };
+  }
+};
+
+/**
+ * Resets login attempt counter and clears any lockout on successful login.
+ */
+export const resetLoginAttempts = async (userId: string): Promise<void> => {
+  if (useMemoryStore) return;
+
+  const normalized = normalizeUserId(userId);
+  try {
+    await prisma.user.update({
+      where: { id: normalized },
+      data: { loginAttempts: 0, lockedUntil: null },
+    });
+  } catch {
+    // Non-critical: failure here does not affect the user session.
+  }
+};
+
+/**
+ * Checks whether the account is currently locked.
+ * Returns lockedUntil date if locked, null otherwise.
+ */
+export const checkAccountLockout = async (
+  email: string
+): Promise<Date | null> => {
+  if (useMemoryStore) return null;
+
+  const normalizedEmail = normalizeEmail(email);
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+      select: { lockedUntil: true },
+    });
+
+    if (!user?.lockedUntil) return null;
+
+    if (user.lockedUntil <= new Date()) {
+      // Lockout expired — clear it
+      await prisma.user.update({
+        where: { email: normalizedEmail },
+        data: { lockedUntil: null, loginAttempts: 0 },
+      });
+      return null;
+    }
+
+    return user.lockedUntil;
+  } catch {
+    return null;
+  }
+};

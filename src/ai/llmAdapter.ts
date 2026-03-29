@@ -15,6 +15,10 @@ type OpenAIChatResponse = {
   error?: { message?: string };
 };
 
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error("OPENAI_API_KEY environment variable must be set");
+}
+
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const DEFAULT_MODEL = "gpt-5.2";
 const DEFAULT_TEMPERATURE = 0.2;

@@ -10,6 +10,9 @@ export const config = {
 };
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+if (!webhookSecret) {
+  throw new Error("STRIPE_WEBHOOK_SECRET environment variable must be set");
+}
 
 const readRawBody = async (req: NextApiRequest) => {
   const chunks: Buffer[] = [];
