@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { ApiError } from "../../lib/api";
 import { loginUser } from "../../lib/auth";
+import "./page.css";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function LoginPage() {
   return (
     <div className="auth-card">
       <h2>Prijava</h2>
-      <p style={{ color: "var(--text-muted)", fontSize: 14, textAlign: "center", marginBottom: 24 }}>
+      <p className="login-page-subtitle">
         Prijavite se da biste koristili tokene i obradu teksta.
       </p>
 
@@ -59,21 +60,12 @@ export default function LoginPage() {
         </div>
 
         <div className="form-group">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div className="login-password-header">
             <label>Lozinka</label>
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "var(--accent)",
-                cursor: "pointer",
-                padding: "4px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className="login-show-password-btn"
               title={showPassword ? "Sakrij lozinku" : "Prikaži lozinku"}
             >
               {showPassword ? (
@@ -98,28 +90,19 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <p
-            style={{
-              padding: "10px 14px",
-              borderRadius: "var(--radius-md)",
-              background: "var(--error-bg)",
-              color: "var(--error)",
-              fontSize: 13,
-              marginBottom: 16,
-            }}
-          >
+          <p className="login-error-message">
             {error}
           </p>
         )}
 
-        <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ width: "100%" }}>
+        <button type="submit" disabled={isSubmitting} className="btn-primary login-submit-btn">
           {isSubmitting ? "Prijava..." : "Prijavi se"}
         </button>
       </form>
 
-      <p style={{ marginTop: 20, fontSize: 14, color: "var(--text-muted)", textAlign: "center" }}>
+      <p className="login-signup-link">
         Nemate nalog?{" "}
-        <Link href="/register" style={{ color: "var(--accent)", fontWeight: 600, textDecoration: "none" }}>
+        <Link href="/register">
           Registracija
         </Link>
       </p>

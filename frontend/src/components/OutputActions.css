@@ -1,0 +1,45 @@
+/* OutputActions.tsx Styles */
+
+.output-actions-container {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.output-actions-format-group {
+  display: flex;
+  gap: 8px;
+  margin-right: 8px;
+}
+
+.output-actions-format-btn {
+  padding: 8px 12px;
+  font-size: 13px;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.output-actions-format-btn.active {
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+.output-actions-format-btn:hover:not(.active) {
+  background: var(--border-light);
+}
+
+.output-actions-download-btn {
+  padding: 8px 20px;
+  font-size: 13px;
+}
+
+.output-actions-error {
+  color: var(--error);
+  font-size: 13px;
+  margin-top: 8px;
+}

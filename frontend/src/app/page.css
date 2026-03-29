@@ -1,0 +1,119 @@
+/* Home Page (page.tsx) Styles */
+
+.home-page-wrapper {
+  padding-top: 60px;
+  padding-bottom: 80px;
+}
+
+.home-page-auth-checking {
+  padding-top: 80px;
+  text-align: center;
+}
+
+/* Section 1 - Intro */
+.home-intro-section {
+  text-align: center;
+  margin-bottom: var(--section-gap);
+}
+
+.home-intro-title {
+  font-family: var(--font-serif);
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+
+.home-intro-features {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 24px;
+}
+
+.home-intro-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.home-intro-feature-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Section 2 - Service type selector */
+.home-service-section {
+  margin-bottom: 32px;
+}
+
+/* Section 3 - Chip selectors */
+.home-chips-section {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+/* Section 4 - Editor */
+.home-editor-section {
+  margin-bottom: 32px;
+}
+
+/* Section 5 - Action buttons */
+.home-actions-section {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-bottom: var(--section-gap);
+}
+
+.home-actions-btn {
+  /* Button styles inherit from .btn-primary and .btn-secondary */
+}
+
+/* Upload zone dragging styles */
+.upload-zone.dragging {
+  border-color: var(--text-ghost);
+  background: var(--bg-card);
+  color: var(--text-main);
+}
+
+.upload-zone-file-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-zone-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+/* Alerts section */
+.home-alerts-section {
+  margin-top: 8px;
+}
+
+/* File error display */
+.file-error-alert {
+  margin-top: 8px;
+}
+
+/* Input conflict warning */
+.input-conflict-alert {
+  margin-top: 8px;
+}

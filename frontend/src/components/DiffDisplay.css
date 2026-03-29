@@ -1,0 +1,119 @@
+/* DiffDisplay.tsx Styles */
+
+.diff-display-hint {
+  font-size: 14px;
+  color: var(--text-main);
+  margin: 12px 0 16px 0;
+  font-weight: 500;
+}
+
+.diff-display-hint-bold {
+  font-weight: 700;
+}
+
+.diff-display-hint-green {
+  color: var(--success);
+  background: rgba(45, 90, 39, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.diff-display-hint-red {
+  text-decoration: underline solid;
+  color: var(--error);
+}
+
+.diff-display-content-pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.8;
+  color: var(--text-main);
+}
+
+.diff-display-content-div {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.8;
+  color: var(--text-main);
+}
+
+.diff-display-copy-btn,
+.diff-display-toggle-btn {
+  position: absolute;
+  top: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  transition: color 0.2s;
+}
+
+.diff-display-copy-btn {
+  right: 48px;
+  color: var(--text-ghost);
+}
+
+.diff-display-copy-btn.copied {
+  color: var(--success);
+}
+
+.diff-display-toggle-btn {
+  right: 12px;
+  color: var(--text-ghost);
+}
+
+.diff-display-toggle-btn.active {
+  color: var(--accent);
+}
+
+/* Diff operation styles */
+.diff-display-deleted {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.diff-display-deleted.reverted {
+  text-decoration: underline solid;
+  color: var(--error);
+}
+
+.diff-display-added {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.diff-display-added.preview {
+  background: rgba(45, 90, 39, 0.15);
+}
+
+.diff-display-added.reverted {
+  text-decoration: underline solid;
+  color: var(--error);
+}
+
+.diff-display-modified {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.diff-display-modified.preview {
+  background: rgba(45, 90, 39, 0.15);
+}
+
+.diff-display-modified.reverted {
+  text-decoration: underline solid;
+  color: var(--error);
+}
+
+.diff-display-modified-original {
+  text-decoration: underline solid;
+  color: var(--error);
+  cursor: pointer;
+  transition: background 0.2s;
+}

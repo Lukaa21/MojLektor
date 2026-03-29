@@ -1,0 +1,112 @@
+/* BatchConfirmationModal.tsx Styles */
+
+.batch-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 26, 24, 0.35);
+  padding: 16px;
+}
+
+.batch-modal-container {
+  width: 100%;
+  max-width: 640px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.batch-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.batch-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.batch-modal-count {
+  font-size: 12px;
+  color: var(--text-ghost);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.batch-modal-list {
+  max-height: 55vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.batch-modal-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  font-size: 14px;
+}
+
+.batch-modal-item.included {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+}
+
+.batch-modal-item.excluded {
+  background: var(--bg-card);
+  color: var(--text-ghost);
+}
+
+.batch-modal-item-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.batch-modal-item-text {
+  line-height: 1.6;
+}
+
+.batch-modal-item-modified {
+  background: var(--success-bg);
+  color: var(--success);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.batch-modal-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.batch-modal-footer-btn {
+  padding: 8px 20px;
+  font-size: 13px;
+}
+
+.batch-modal-footer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

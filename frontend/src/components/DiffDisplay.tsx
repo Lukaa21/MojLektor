@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import type { DiffOp, ReversibleChange, ReversibleToken } from "../lib/api";
 import BatchConfirmationModal from "./BatchConfirmationModal";
 import { OutputActions } from "./OutputActions";
+import "./DiffDisplay.css";
 
 type DiffDisplayProps = {
   original: string;
@@ -271,35 +272,13 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
       >
         <div className="selector-label">Rezultat i korekcije</div>
 
-        <p
-          style={{
-            fontSize: 14,
-            color: "var(--text-main)",
-            marginBottom: 16,
-            margin: "12px 0 16px 0",
-            fontWeight: 500,
-          }}
-          
-        >
-          
-          <span style={{ fontWeight: 700 }}>Hint:</span> Klikni na {" "}
-          <span
-            style={{
-              color: "var(--success)",
-              background: "rgba(45, 90, 39, 0.15)",
-              padding: "2px 6px",
-              borderRadius: "4px",
-            }}
-          >
+        <p className="diff-display-hint">
+          <span className="diff-display-hint-bold">Hint:</span> Klikni na {" "}
+          <span className="diff-display-hint-green">
              zeleni tekst
           </span>
           {" "}da opovrgneš,{" "}
-          <span
-            style={{
-              textDecoration: "underline solid",
-              color: "var(--error)",
-            }}
-          >
+          <span className="diff-display-hint-red">
             crveni tekst
           </span>
           {" "}za undo
@@ -311,18 +290,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
             type="button"
             onClick={copyText}
             aria-label={copied ? "Kopirano" : "Kopiraj tekst"}
-            style={{
-              position: "absolute",
-              top: 12,
-              right: 48,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 6,
-              borderRadius: "var(--radius-md)",
-              color: copied ? "var(--success)" : "var(--text-ghost)",
-              transition: "color 0.2s",
-            }}
+            className={`diff-display-copy-btn${copied ? " copied" : ""}`}
           >
             {copied ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -336,18 +304,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
             type="button"
             onClick={() => setShowClean(!showClean)}
             aria-label={showClean ? "Pokaži razlike" : "Pokaži čist tekst"}
-            style={{
-              position: "absolute",
-              top: 12,
-              right: 12,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 6,
-              borderRadius: "var(--radius-md)",
-              color: showClean ? "var(--accent)" : "var(--text-ghost)",
-              transition: "color 0.2s",
-            }}
+            className={`diff-display-toggle-btn${showClean ? " active" : ""}`}
             title={showClean ? "Pokaži razlike" : "Pokaži čist tekst"}
           >
             {showClean ? (
@@ -366,26 +323,11 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
 
           {/* Content: Clean or Diff view */}
           {showClean ? (
-            <pre style={{ 
-              whiteSpace: "pre-wrap", 
-              wordWrap: "break-word", 
-              margin: 0,
-              fontFamily: "var(--font-serif)",
-              fontSize: 19,
-              lineHeight: 1.8,
-              color: "var(--text-main)",
-            }}>
+            <pre className="diff-display-content-pre">
               {renderedText}
             </pre>
           ) : (
-            <div style={{ 
-              whiteSpace: "pre-wrap", 
-              wordWrap: "break-word",
-              fontFamily: "var(--font-serif)",
-              fontSize: 19,
-              lineHeight: 1.8,
-              color: "var(--text-main)",
-            }}>
+            <div className="diff-display-content-div">
               {/* Inline diff content */}
               {diff.map((op, idx) => {
                 if (op.type === "unchanged") {
@@ -400,12 +342,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
                   return isReverted
                     ? <span
                         key={idx}
-                        style={{
-                          textDecoration: "underline solid",
-                          color: "var(--error)",
-                          cursor: change ? "pointer" : undefined,
-                          transition: "background 0.2s",
-                        }}
+                        className={`diff-display-deleted${isReverted ? " reverted" : ""}`}
                         onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
                       >
                         {op.value}
@@ -418,12 +355,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
                     return (
                       <span
                         key={idx}
-                        style={{
-                          textDecoration: "underline solid",
-                          color: "var(--error)",
-                          cursor: "pointer",
-                          transition: "background 0.2s",
-                        }}
+                        className="diff-display-added reverted"
                         onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
                       >
                         {op.value}
@@ -433,11 +365,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
                   return (
                     <ins
                       key={idx}
-                      style={{
-                        cursor: change ? "pointer" : undefined,
-                        transition: "background 0.2s",
-                        background: isPreview ? "rgba(45, 90, 39, 0.15)" : undefined,
-                      }}
+                      className={`diff-display-added${isPreview ? " preview" : ""}`}
                       onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
                       onPointerDown={change ? () => startLongPress(change.id) : undefined}
                       onPointerUp={stopLongPress}
@@ -453,12 +381,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
                   return (
                     <span
                       key={idx}
-                      style={{
-                        textDecoration: "underline solid",
-                        color: "var(--error)",
-                        cursor: "pointer",
-                        transition: "background 0.2s",
-                      }}
+                      className="diff-display-modified-original"
                       onClick={(e) => handleTokenClick(e, change.id)}
                     >
                       {op.original}
@@ -470,11 +393,7 @@ export const DiffDisplay = ({ original, edited, diff, changes, tokens, cardCount
                   <span key={idx}>
                     <del>{op.original}</del>{" "}
                     <ins
-                      style={{
-                        cursor: change ? "pointer" : undefined,
-                        transition: "background 0.2s",
-                        background: isPreview ? "rgba(45, 90, 39, 0.15)" : undefined,
-                      }}
+                      className={`diff-display-modified${isPreview ? " preview" : ""}`}
                       onClick={change ? (e) => handleTokenClick(e, change.id) : undefined}
                       onPointerDown={change ? () => startLongPress(change.id) : undefined}
                       onPointerUp={stopLongPress}

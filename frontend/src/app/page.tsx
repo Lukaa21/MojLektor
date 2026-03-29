@@ -21,6 +21,7 @@ import { EstimateDisplay } from "../components/EstimateDisplay";
 import { ErrorMessage } from "../components/Error";
 import { Loader } from "../components/Loader";
 import { ResultDisplay } from "../components/ResultDisplay";
+import "./page.css";
 
 const serviceCards: { value: ServiceType; icon: string; label: string; desc: string; badgeText: string; badgeClass: "accent" | "muted" }[] = [
   { value: "LEKTURA" as ServiceType, icon: "/lektura.png", label: "Lektura", desc: "Gramatika, pravopis i interpunkcija.", badgeText: "1 token = 2 karaktera", badgeClass: "accent" },
@@ -282,7 +283,7 @@ export default function Home() {
 
   if (isAuthChecking) {
     return (
-      <div className="container" style={{ paddingTop: 80, textAlign: "center" }}>
+      <div className="container home-page-auth-checking">
         <Loader label="Provjera prijave..." />
       </div>
     );
@@ -293,49 +294,21 @@ export default function Home() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="container"
-      style={{ paddingTop: 60, paddingBottom: 80 }}
+      className="container home-page-wrapper"
     >
       {/* Section 1 — Intro */}
-      <section style={{ textAlign: "center", marginBottom: "var(--section-gap)" }}>
-        <h1
-          style={{
-            fontFamily: "var(--font-serif)",
-            fontSize: 42,
-            fontWeight: 400,
-            lineHeight: 1.2,
-            marginBottom: 16,
-          }}
-        >
+      <section className="home-intro-section">
+        <h1 className="home-intro-title">
           Vratite snagu svojim riječima.
         </h1>
-        <div style={{ display: "flex", justifyContent: "center", gap: 40, marginTop: 24 }}>
+        <div className="home-intro-features">
           {["Podrška za 4 jezika", "Reverzibilne izmjene", "Automatskat obrada"].map(
             (feature) => (
               <span
                 key={feature}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  fontSize: 14,
-                  color: "var(--text-muted)",
-                }}
+                className="home-intro-feature"
               >
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: 24,
-                    height: 24,
-                    borderRadius: "50%",
-                    background: "var(--bg-subtle)",
-                    color: "var(--accent)",
-                    fontSize: 12,
-                    fontWeight: 700,
-                  }}
-                >
+                <span className="home-intro-feature-badge">
                   ✓
                 </span>
                 {feature}
@@ -346,7 +319,7 @@ export default function Home() {
       </section>
 
       {/* Section 2 — Service type selector */}
-      <section style={{ marginBottom: 32 }}>
+      <section className="home-service-section">
         <div className="selector-label">Vrsta usluge</div>
         <div className="service-grid">
           {serviceCards.map((card) => (
@@ -366,7 +339,7 @@ export default function Home() {
       </section>
 
       {/* Section 3 — Chip selectors */}
-      <section style={{ display: "flex", gap: 40, marginBottom: 32, flexWrap: "wrap" }}>
+      <section className="home-chips-section">
         <div>
           <div className="selector-label">Jezik</div>
           <div className="chip-group">
@@ -406,7 +379,7 @@ export default function Home() {
       </section>
 
       {/* Section 4 — Editor */}
-      <section style={{ marginBottom: 32 }}>
+      <section className="home-editor-section">
         <div className="editor-container">
           <textarea
             value={rawText}
@@ -427,12 +400,7 @@ export default function Home() {
             placeholder="Unesite ili nalijepite vaš tekst ovdje..."
           />
           <div
-            className="upload-zone"
-            style={isDragging ? {
-              borderColor: "var(--text-ghost)",
-              background: "var(--bg-card)",
-              color: "var(--text-main)",
-            } : undefined}
+            className={`upload-zone${isDragging ? " dragging" : ""}`}
             onClick={() => {
               if (trimmedText) {
                 setInputConflictWarning(conflictMessage);
@@ -467,7 +435,7 @@ export default function Home() {
               disabled={!!trimmedText}
             />
             {file ? (
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="upload-zone-file-name">
                 📎 {file.name}
                 <button
                   type="button"
@@ -475,13 +443,7 @@ export default function Home() {
                     e.stopPropagation();
                     clearUploadedFile();
                   }}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "var(--text-muted)",
-                    fontSize: 16,
-                  }}
+                  className="upload-zone-remove-btn"
                 >
                   ✕
                 </button>
@@ -492,13 +454,13 @@ export default function Home() {
           </div>
         </div>
         {fileError && (
-          <div className="alert alert-error" style={{ marginTop: 8 }}>
+          <div className="alert alert-error file-error-alert">
             <svg className="alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
             <span>{fileError}</span>
           </div>
         )}
         {inputConflictWarning && (
-          <div className="alert alert-warning" style={{ marginTop: 8 }}>
+          <div className="alert alert-warning input-conflict-alert">
             <svg className="alert-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
             <span>{inputConflictWarning}</span>
           </div>
@@ -506,14 +468,7 @@ export default function Home() {
       </section>
 
       {/* Section 5 — Action buttons */}
-      <section
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: 16,
-          marginBottom: "var(--section-gap)",
-        }}
-      >
+      <section className="home-actions-section">
         <button
           type="button"
           className="btn-secondary"

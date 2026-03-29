@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { ApiError } from "../../lib/api";
 import { registerUser } from "../../lib/auth";
+import "./page.css";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -45,7 +46,7 @@ export default function RegisterPage() {
   return (
     <div className="auth-card">
       <h2>Registracija</h2>
-      <p style={{ color: "var(--text-muted)", fontSize: 14, textAlign: "center", marginBottom: 24 }}>
+      <p className="register-page-subtitle">
         Kreirajte nalog da biste koristili tokene i obradu teksta.
       </p>
 
@@ -61,21 +62,12 @@ export default function RegisterPage() {
         </div>
 
         <div className="form-group">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div className="register-password-header">
             <label>Lozinka</label>
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "var(--accent)",
-                cursor: "pointer",
-                padding: "4px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className="register-show-password-btn"
               title={showPassword ? "Sakrij lozinku" : "Prikaži lozinku"}
             >
               {showPassword ? (
@@ -100,21 +92,12 @@ export default function RegisterPage() {
         </div>
 
         <div className="form-group">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div className="register-confirmation-header">
             <label>Potvrda lozinke</label>
             <button
               type="button"
               onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "var(--accent)",
-                cursor: "pointer",
-                padding: "4px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className="register-show-password-confirmation-btn"
               title={showPasswordConfirmation ? "Sakrij lozinku" : "Prikaži lozinku"}
             >
               {showPasswordConfirmation ? (
@@ -139,28 +122,19 @@ export default function RegisterPage() {
         </div>
 
         {error && (
-          <p
-            style={{
-              padding: "10px 14px",
-              borderRadius: "var(--radius-md)",
-              background: "var(--error-bg)",
-              color: "var(--error)",
-              fontSize: 13,
-              marginBottom: 16,
-            }}
-          >
+          <p className="register-error-message">
             {error}
           </p>
         )}
 
-        <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ width: "100%" }}>
-          {isSubmitting ? "Registracija..." : "Kreiraj nalog"}
+        <button type="submit" disabled={isSubmitting} className="btn-primary register-submit-btn">
+          {isSubmitting ? "Registracija..." : "Registruj se"}
         </button>
       </form>
 
-      <p style={{ marginTop: 20, fontSize: 14, color: "var(--text-muted)", textAlign: "center" }}>
+      <p className="register-login-link">
         Već imate nalog?{" "}
-        <Link href="/login" style={{ color: "var(--accent)", fontWeight: 600, textDecoration: "none" }}>
+        <Link href="/login">
           Prijava
         </Link>
       </p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import "./OutputActions.css";
 
 type OutputActionsProps = {
   outputText: string;

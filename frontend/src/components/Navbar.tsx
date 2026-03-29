@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { getCurrentUser, logoutUser } from "../lib/auth";
 import type { AuthUser, TokenBalanceResponse } from "../lib/api";
 import { useTokenBalance } from "../context/TokenBalanceContext";
+import "./Navbar.css";
 
 const navLinks = [
   { name: "Početna", href: "/" },
@@ -58,28 +59,8 @@ export const Navbar = () => {
   };
 
   return (
-    <header
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        background: "rgba(253,252,251,0.92)",
-        backdropFilter: "blur(12px)",
-        borderBottom: "1px solid var(--border-light)",
-        height: 72,
-      }}
-    >
-      <nav
-        style={{
-          maxWidth: 960,
-          margin: "0 auto",
-          padding: "0 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          height: "100%",
-        }}
-      >
+    <header className="navbar-header">
+      <nav className="navbar-container">
         {/* Logo */}
         <Link
           href="/"
@@ -90,25 +71,19 @@ export const Navbar = () => {
             alt="MojLektor logo"
             width={160}
             height={160}
-            style={{ borderRadius: 4 }}
+            className="navbar-logo"
           />
         </Link>
 
         {/* Center nav links */}
-        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+        <div className="navbar-nav-links">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                style={{
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: isActive ? "var(--text-main)" : "var(--text-muted)",
-                  textDecoration: "none",
-                  transition: "color 0.2s",
-                }}
+                className={`navbar-nav-link${isActive ? " active" : ""}`}
                 aria-current={isActive ? "page" : undefined}
               >
                 {link.name}
@@ -118,35 +93,18 @@ export const Navbar = () => {
         </div>
 
         {/* Right side */}
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <div className="navbar-right">
           {user ? (
             <>
               <div
-                className="token-badge"
-                style={{
-                  textDecoration: "none",
-                  color: "var(--accent)",
-                  padding: "6px 12px",
-                  borderRadius: 99,
-                  fontWeight: 700,
-                  fontSize: 13,
-                }}
+                className="token-badge navbar-token-badge"
               >
                 {balance ?? user.tokenBalance} TOKEN/A
               </div>
               <button
                 type="button"
                 onClick={handleLogout}
-                style={{
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: "var(--text-muted)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  transition: "color 0.2s",
-                }}
+                className="navbar-logout-btn"
               >
                 Odjavi se
               </button>
@@ -155,20 +113,13 @@ export const Navbar = () => {
             <>
               <Link
                 href="/login"
-                style={{
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: "var(--text-muted)",
-                  textDecoration: "none",
-                  transition: "color 0.2s",
-                }}
+                className="navbar-login-link"
               >
                 Prijava
               </Link>
               <Link
                 href="/register"
-                className="btn-primary"
-                style={{ padding: "8px 20px", fontSize: 13 }}
+                className="btn-primary navbar-register-link"
               >
                 Registracija
               </Link>
