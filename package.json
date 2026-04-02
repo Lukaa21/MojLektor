@@ -3,7 +3,6 @@
     "effect": "^3.20.0"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.0",
     "@types/express": "^5.0.6",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
@@ -16,9 +15,11 @@
     "mammoth": "^1.8.0",
     "next": "^16.2.1",
     "pdf-parse": "^1.1.1",
+    "pg": "^8.20.0",
     "stripe": "^18.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/formidable": "^3.4.6",
@@ -26,15 +27,16 @@
     "@types/node": "^22.13.4",
     "@types/pdf-parse": "^1.1.5",
     "@types/pdfmake": "^0.3.1",
+    "@types/pg": "^8.20.0",
     "@types/react": "19.2.14",
+    "babel-loader": "^10.1.1",
     "concurrently": "^8.2.2",
-    "prisma": "^6.19.0",
     "tsx": "^4.19.2",
     "typescript": "5.9.3",
     "vitest": "^4.1.2"
   },
   "scripts": {
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "build:express": "tsc",
     "start:express": "node dist/index.js",
@@ -46,8 +48,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "postinstall": "prisma generate"
+    "test:watch": "vitest"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

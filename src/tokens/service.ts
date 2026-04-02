@@ -1,5 +1,5 @@
-import type { Prisma } from "@prisma/client";
-import { prisma } from "../db/prisma";
+import { randomUUID } from "crypto";
+import { pool } from "../db/db";
 import {
   TOKEN_PACKAGES,
   getTokenPackageSuggestion,
@@ -74,18 +74,21 @@ export const getOrCreateUser = async (userId: string) => {
   }
 
   try {
-    const existing = await prisma.user.findUnique({ where: { id: normalized } });
-    if (existing) {
-      return existing;
+    const { rows } = await pool.query<TokenUser>(
+      `SELECT id, email, "tokenBalance", "stripeCustomerId", "passwordHash", "loginAttempts", "lockedUntil", "createdAt", "updatedAt"
+       FROM "User" WHERE id = $1`,
+      [normalized]
+    );
+    if (rows[0]) {
+      return rows[0];
     }
 
-    return await prisma.user.create({
-      data: {
-        id: normalized,
-        email: `${normalized}@local.demo`,
-        tokenBalance: defaultBalance,
-      },
-    });
+    const { rows: created } = await pool.query<TokenUser>(
+      `INSERT INTO "User" (id, email, "tokenBalance", "loginAttempts", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, 0, NOW(), NOW()) RETURNING *`,
+      [normalized, `${normalized}@local.demo`, defaultBalance]
+    );
+    return created[0];
   } catch {
     throw new Error("Failed to resolve user in database.");
   }
@@ -104,7 +107,12 @@ export const findUserByEmail = async (email: string) => {
   }
 
   try {
-    return await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    const { rows } = await pool.query<TokenUser>(
+      `SELECT id, email, "passwordHash", "tokenBalance", "stripeCustomerId", "loginAttempts", "lockedUntil"
+       FROM "User" WHERE email = $1`,
+      [normalizedEmail]
+    );
+    return rows[0] ?? null;
   } catch {
     return null;
   }
@@ -119,7 +127,12 @@ export const findUserById = async (userId: string) => {
   }
 
   try {
-    return await prisma.user.findUnique({ where: { id: normalized } });
+    const { rows } = await pool.query<TokenUser>(
+      `SELECT id, email, "tokenBalance", "stripeCustomerId", "passwordHash"
+       FROM "User" WHERE id = $1`,
+      [normalized]
+    );
+    return rows[0] ?? null;
   } catch {
     return null;
   }
@@ -150,13 +163,12 @@ export const createUserWithPassword = async (
     return created;
   }
 
-  return prisma.user.create({
-    data: {
-      email: normalizedEmail,
-      passwordHash,
-      tokenBalance: defaultBalance,
-    },
-  });
+  const { rows } = await pool.query<TokenUser>(
+    `INSERT INTO "User" (id, email, "passwordHash", "tokenBalance", "loginAttempts", "createdAt", "updatedAt")
+     VALUES ($1, $2, $3, $4, 0, NOW(), NOW()) RETURNING id, email, "tokenBalance"`,
+    [randomUUID(), normalizedEmail, passwordHash, defaultBalance]
+  );
+  return rows[0];
 };
 
 export const getUserTokenBalance = async (userId: string) => {
@@ -195,46 +207,50 @@ export const addTokensToUser = async (
   try {
     const user = await getOrCreateUser(userId);
 
-    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
       if (meta?.checkoutSessionId) {
-        const existingPurchase = await tx.tokenPurchase.findUnique({
-          where: { stripeCheckoutSessionId: meta.checkoutSessionId },
-        });
-        if (existingPurchase?.status === "CONFIRMED") {
+        const { rows } = await client.query(
+          `SELECT status FROM "TokenPurchase" WHERE "stripeCheckoutSessionId" = $1`,
+          [meta.checkoutSessionId]
+        );
+        if (rows[0]?.status === "CONFIRMED") {
+          await client.query("COMMIT");
           return user;
         }
       }
 
-      const updated = await tx.user.update({
-        where: { id: user.id },
-        data: { tokenBalance: { increment: safeAmount } },
-      });
+      const { rows: updated } = await client.query<TokenUser>(
+        `UPDATE "User" SET "tokenBalance" = "tokenBalance" + $1, "updatedAt" = NOW()
+         WHERE id = $2 RETURNING id, email, "tokenBalance", "stripeCustomerId"`,
+        [safeAmount, user.id]
+      );
 
       if (meta?.packageId) {
-        await tx.tokenPurchase.upsert({
-          where: {
-            stripeCheckoutSessionId:
-              meta.checkoutSessionId || `${updated.id}-${meta.paymentIntentId || "manual"}`,
-          },
-          update: {
-            status: "CONFIRMED",
-            tokensGranted: safeAmount,
-            stripePaymentIntentId: meta.paymentIntentId,
-          },
-          create: {
-            userId: updated.id,
-            tokenPackageId: meta.packageId,
-            stripeCheckoutSessionId:
-              meta.checkoutSessionId || `${updated.id}-${meta.paymentIntentId || "manual"}`,
-            stripePaymentIntentId: meta.paymentIntentId,
-            status: "CONFIRMED",
-            tokensGranted: safeAmount,
-          },
-        });
+        const sessionKey = meta.checkoutSessionId || `${user.id}-${meta.paymentIntentId || "manual"}`;
+        await client.query(
+          `INSERT INTO "TokenPurchase" (id, "userId", "tokenPackageId", "stripeCheckoutSessionId",
+             "stripePaymentIntentId", status, "tokensGranted", "createdAt", "updatedAt")
+           VALUES ($1, $2, $3, $4, $5, 'CONFIRMED', $6, NOW(), NOW())
+           ON CONFLICT ("stripeCheckoutSessionId") DO UPDATE SET
+             status = 'CONFIRMED',
+             "tokensGranted" = EXCLUDED."tokensGranted",
+             "stripePaymentIntentId" = EXCLUDED."stripePaymentIntentId",
+             "updatedAt" = NOW()`,
+          [randomUUID(), user.id, meta.packageId, sessionKey, meta.paymentIntentId ?? null, safeAmount]
+        );
       }
 
-      return updated;
-    });
+      await client.query("COMMIT");
+      return updated[0];
+    } catch (e) {
+      await client.query("ROLLBACK");
+      throw e;
+    } finally {
+      client.release();
+    }
   } catch {
     throw new Error("Failed to add tokens in database.");
   }
@@ -288,59 +304,49 @@ export const consumeTokensForProcessing = async (
   }
 
   try {
-    const txResult = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
       // Atomic spend guard: only deduct when tokenBalance >= required.
-      const spendResult = await tx.user.updateMany({
-        where: {
-          id: user.id,
-          tokenBalance: { gte: required },
-        },
-        data: {
-          tokenBalance: { decrement: required },
-        },
-      });
+      const spendResult = await client.query(
+        `UPDATE "User" SET "tokenBalance" = "tokenBalance" - $1, "updatedAt" = NOW()
+         WHERE id = $2 AND "tokenBalance" >= $1`,
+        [required, user.id]
+      );
 
-      if (spendResult.count === 0) {
-        const latest = await tx.user.findUnique({
-          where: { id: user.id },
-          select: { tokenBalance: true },
-        });
-
-        return {
-          ok: false as const,
-          currentBalance: latest?.tokenBalance ?? 0,
-        };
+      if ((spendResult.rowCount ?? 0) === 0) {
+        const { rows: latest } = await client.query<{ tokenBalance: number }>(
+          `SELECT "tokenBalance" FROM "User" WHERE id = $1`,
+          [user.id]
+        );
+        await client.query("COMMIT");
+        return buildInsufficientResponse(latest[0]?.tokenBalance ?? 0);
       }
 
-      const updated = await tx.user.findUnique({
-        where: { id: user.id },
-        select: { tokenBalance: true },
-      });
+      const { rows: updated } = await client.query<{ tokenBalance: number }>(
+        `SELECT "tokenBalance" FROM "User" WHERE id = $1`,
+        [user.id]
+      );
 
-      await tx.tokenUsage.create({
-        data: {
-          userId: user.id,
-          endpoint,
-          charactersUsed: required,
-          tokensDeducted: required,
-        },
-      });
+      await client.query(
+        `INSERT INTO "TokenUsage" (id, "userId", endpoint, "charactersUsed", "tokensDeducted", "createdAt")
+         VALUES ($1, $2, $3, $4, $5, NOW())`,
+        [randomUUID(), user.id, endpoint, required, required]
+      );
 
+      await client.query("COMMIT");
       return {
         ok: true as const,
-        remainingBalance: updated?.tokenBalance ?? 0,
+        remainingBalance: updated[0]?.tokenBalance ?? 0,
+        requiredTokens: required,
       };
-    });
-
-    if (!txResult.ok) {
-      return buildInsufficientResponse(txResult.currentBalance);
+    } catch (e) {
+      await client.query("ROLLBACK");
+      throw e;
+    } finally {
+      client.release();
     }
-
-    return {
-      ok: true as const,
-      remainingBalance: txResult.remainingBalance,
-      requiredTokens: required,
-    };
   } catch {
     throw new Error("Failed to consume tokens in database.");
   }
@@ -375,20 +381,17 @@ export const refundTokensAfterFailedProcessing = async (
   const maxAttempts = 3;
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
-      await prisma.user.update({
-        where: { id },
-        data: { tokenBalance: { increment: refund } },
-      });
+      await pool.query(
+        `UPDATE "User" SET "tokenBalance" = "tokenBalance" + $1, "updatedAt" = NOW() WHERE id = $2`,
+        [refund, id]
+      );
 
       try {
-        await prisma.tokenUsage.create({
-          data: {
-            userId: id,
-            endpoint: `${endpoint}#refund`,
-            charactersUsed: 0,
-            tokensDeducted: -refund,
-          },
-        });
+        await pool.query(
+          `INSERT INTO "TokenUsage" (id, "userId", endpoint, "charactersUsed", "tokensDeducted", "createdAt")
+           VALUES ($1, $2, $3, 0, $4, NOW())`,
+          [randomUUID(), id, `${endpoint}#refund`, -refund]
+        );
       } catch {
         console.error("[tokens] Refund audit logging failed", {
           userId: id,
@@ -468,65 +471,74 @@ export const applyCompletedCheckoutEvent = async ({
     return { applied: true as const };
   }
 
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const alreadyProcessed = await tx.processedStripeEvent.findUnique({
-      where: { eventId: stripeEventId },
-    });
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
 
-    if (alreadyProcessed) {
+    const { rows: alreadyProcessed } = await client.query(
+      `SELECT "eventId" FROM "ProcessedStripeEvent" WHERE "eventId" = $1`,
+      [stripeEventId]
+    );
+    if (alreadyProcessed.length > 0) {
+      await client.query("COMMIT");
       return { applied: false as const, reason: "duplicate_event" as const };
     }
 
-    await tx.processedStripeEvent.create({
-      data: { eventId: stripeEventId },
-    });
+    await client.query(
+      `INSERT INTO "ProcessedStripeEvent" ("eventId", "createdAt") VALUES ($1, NOW())`,
+      [stripeEventId]
+    );
 
-    const user = await tx.user.findUnique({
-      where: { id: normalizedUserId },
-    });
+    const { rows: userRows } = await client.query<{ id: string; tokenBalance: number }>(
+      `SELECT id, "tokenBalance" FROM "User" WHERE id = $1`,
+      [normalizedUserId]
+    );
+    const user = userRows[0];
 
     if (!user) {
+      await client.query("ROLLBACK");
       return { applied: false as const, reason: "unknown_user" as const };
     }
 
-    const existingPurchase = await tx.tokenPurchase.findUnique({
-      where: { stripeCheckoutSessionId: checkoutSessionId },
-    });
-
-    if (existingPurchase?.status === "CONFIRMED") {
+    const { rows: existingPurchase } = await client.query<{ status: string }>(
+      `SELECT status FROM "TokenPurchase" WHERE "stripeCheckoutSessionId" = $1`,
+      [checkoutSessionId]
+    );
+    if (existingPurchase[0]?.status === "CONFIRMED") {
+      await client.query("COMMIT");
       return { applied: false as const, reason: "purchase_already_confirmed" as const };
     }
 
-    const updatedUser = await tx.user.update({
-      where: { id: user.id },
-      data: {
-        tokenBalance: { increment: tokenPackage.tokenAmount },
-      },
-    });
+    const { rows: updatedUser } = await client.query<{ tokenBalance: number }>(
+      `UPDATE "User" SET "tokenBalance" = "tokenBalance" + $1, "updatedAt" = NOW()
+       WHERE id = $2 RETURNING "tokenBalance"`,
+      [tokenPackage.tokenAmount, user.id]
+    );
 
-    await tx.tokenPurchase.upsert({
-      where: { stripeCheckoutSessionId: checkoutSessionId },
-      update: {
-        status: "CONFIRMED",
-        tokensGranted: tokenPackage.tokenAmount,
-        stripePaymentIntentId: paymentIntentId,
-        tokenPackageId: tokenPackage.id,
-      },
-      create: {
-        userId: user.id,
-        tokenPackageId: tokenPackage.id,
-        stripeCheckoutSessionId: checkoutSessionId,
-        stripePaymentIntentId: paymentIntentId,
-        status: "CONFIRMED",
-        tokensGranted: tokenPackage.tokenAmount,
-      },
-    });
+    await client.query(
+      `INSERT INTO "TokenPurchase" (id, "userId", "tokenPackageId", "stripeCheckoutSessionId",
+         "stripePaymentIntentId", status, "tokensGranted", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, 'CONFIRMED', $6, NOW(), NOW())
+       ON CONFLICT ("stripeCheckoutSessionId") DO UPDATE SET
+         status = 'CONFIRMED',
+         "tokensGranted" = EXCLUDED."tokensGranted",
+         "stripePaymentIntentId" = EXCLUDED."stripePaymentIntentId",
+         "tokenPackageId" = EXCLUDED."tokenPackageId",
+         "updatedAt" = NOW()`,
+      [randomUUID(), user.id, tokenPackage.id, checkoutSessionId, paymentIntentId ?? null, tokenPackage.tokenAmount]
+    );
 
+    await client.query("COMMIT");
     return {
       applied: true as const,
-      balance: updatedUser.tokenBalance,
+      balance: updatedUser[0]?.tokenBalance,
     };
-  });
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
 };
 
 export const getPackageById = (packageId: string) =>
@@ -556,18 +568,20 @@ export const recordFailedLogin = async (
 
   const normalizedEmail = normalizeEmail(email);
   try {
-    const updated = await prisma.user.update({
-      where: { email: normalizedEmail },
-      data: { loginAttempts: { increment: 1 } },
-      select: { loginAttempts: true, lockedUntil: true },
-    });
+    const { rows } = await pool.query<{ loginAttempts: number; lockedUntil: Date | null }>(
+      `UPDATE "User" SET "loginAttempts" = "loginAttempts" + 1, "updatedAt" = NOW()
+       WHERE email = $1 RETURNING "loginAttempts", "lockedUntil"`,
+      [normalizedEmail]
+    );
+    const updated = rows[0];
+    if (!updated) return { locked: false, lockedUntil: null };
 
     if (updated.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
       const lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
-      await prisma.user.update({
-        where: { email: normalizedEmail },
-        data: { lockedUntil },
-      });
+      await pool.query(
+        `UPDATE "User" SET "lockedUntil" = $1, "updatedAt" = NOW() WHERE email = $2`,
+        [lockedUntil, normalizedEmail]
+      );
       return { locked: true, lockedUntil };
     }
 
@@ -585,10 +599,11 @@ export const resetLoginAttempts = async (userId: string): Promise<void> => {
 
   const normalized = normalizeUserId(userId);
   try {
-    await prisma.user.update({
-      where: { id: normalized },
-      data: { loginAttempts: 0, lockedUntil: null },
-    });
+    await pool.query(
+      `UPDATE "User" SET "loginAttempts" = 0, "lockedUntil" = NULL, "updatedAt" = NOW()
+       WHERE id = $1`,
+      [normalized]
+    );
   } catch {
     // Non-critical: failure here does not affect the user session.
   }
@@ -605,19 +620,20 @@ export const checkAccountLockout = async (
 
   const normalizedEmail = normalizeEmail(email);
   try {
-    const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-      select: { lockedUntil: true },
-    });
-
+    const { rows } = await pool.query<{ lockedUntil: Date | null }>(
+      `SELECT "lockedUntil" FROM "User" WHERE email = $1`,
+      [normalizedEmail]
+    );
+    const user = rows[0];
     if (!user?.lockedUntil) return null;
 
     if (user.lockedUntil <= new Date()) {
       // Lockout expired — clear it
-      await prisma.user.update({
-        where: { email: normalizedEmail },
-        data: { lockedUntil: null, loginAttempts: 0 },
-      });
+      await pool.query(
+        `UPDATE "User" SET "lockedUntil" = NULL, "loginAttempts" = 0, "updatedAt" = NOW()
+         WHERE email = $1`,
+        [normalizedEmail]
+      );
       return null;
     }
 

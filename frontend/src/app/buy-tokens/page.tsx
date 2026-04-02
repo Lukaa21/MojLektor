@@ -46,9 +46,10 @@ export default function BuyTokensPage() {
           setPaymentStatus("canceled");
         }
 
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
         const [pkgRes, balanceRes] = await Promise.all([
-          fetch("/api/tokens/packages", { credentials: "include" }),
-          fetch("/api/tokens/balance", { credentials: "include" }),
+          fetch(`${apiBase}/api/tokens/packages`, { credentials: "include" }),
+          fetch(`${apiBase}/api/tokens/balance`, { credentials: "include" }),
         ]);
 
         if (pkgRes.status === 401 || balanceRes.status === 401) {

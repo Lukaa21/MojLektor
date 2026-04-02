@@ -15,7 +15,7 @@ export const TokenBalanceProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshBalance = useCallback(async () => {
     try {
-      const response = await fetch("/api/tokens/balance", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ?? ""}/api/tokens/balance`, {
         credentials: "include",
       });
       if (response.ok) {

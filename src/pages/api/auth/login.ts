@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { handleCors } from "../../../utils/cors";
 import { verifyPassword } from "../../../auth/password";
 import { setAuthCookie, signAuthToken } from "../../../auth/session";
 import {
@@ -13,6 +14,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  if (handleCors(req, res)) return;
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }

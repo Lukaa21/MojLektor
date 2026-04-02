@@ -3,7 +3,20 @@
     "allow": [
       "Bash(npx prisma:*)",
       "Bash(npm run:*)",
-      "Bash(powershell -Command \":*)"
+      "Bash(powershell -Command \":*)",
+      "Bash(grep -r \"$transaction\\\\|\\\\.user\\\\.\\\\|\\\\.tokenUsage\\\\.\\\\|\\\\.tokenPurchase\\\\.\\\\|\\\\.processedStripeEvent\\\\.\" /c/Users/Luka/Desktop/MojLektor/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(grep -l \"Prisma\\\\|prisma\\\\|User\\\\|TokenPurchase\\\\|TokenUsage\" /c/Users/Luka/Desktop/MojLektor/src/**/*.ts)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm install:*)",
+      "Bash(npx next:*)",
+      "Bash(grep -l \"handleCors\" /c/Users/Luka/Desktop/MojLektor/src/pages/api/auth/*.ts /c/Users/Luka/Desktop/MojLektor/src/pages/api/tokens/*.ts /c/Users/Luka/Desktop/MojLektor/src/pages/api/*.ts)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Luka\\\\Desktop\\\\make-api-zip.ps1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Luka\\\\Desktop\\\\make-frontend-zip.ps1\")",
+      "Bash(ls /c/Users/Luka/Desktop/MojLektor/src/pages/api/tokens/webhook*)",
+      "Bash(find C:UsersLukaDesktopMojLektor -name *.sql -o -name *schema* -o -name *migration*)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Luka\\Desktop\\MojLektor\\.next"
     ]
   }
 }

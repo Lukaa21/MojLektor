@@ -35,7 +35,8 @@ const parseCookies = (cookieHeader?: string) => {
 
 const buildCookie = (name: string, value: string, maxAgeSeconds: number) => {
   const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-  return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}${secure}`;
+  const domain = process.env.COOKIE_DOMAIN ? `; Domain=${process.env.COOKIE_DOMAIN}` : "";
+  return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}${domain}${secure}`;
 };
 
 export const signAuthToken = (input: { userId: string; email: string }) =>

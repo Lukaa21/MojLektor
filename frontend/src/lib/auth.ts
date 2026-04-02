@@ -1,7 +1,9 @@
 import { ApiError, postJson, type AuthResponse } from "./api";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+
 export const getCurrentUser = async () => {
-  const response = await fetch("/api/auth/me", {
+  const response = await fetch(`${API_BASE}/api/auth/me`, {
     method: "GET",
     credentials: "include",
   });

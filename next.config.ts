@@ -16,6 +16,14 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: [
+    "bcryptjs",
+    "pg",
+    "jsonwebtoken",
+    "formidable",
+    "mammoth",
+    "pdf-parse",
+  ],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

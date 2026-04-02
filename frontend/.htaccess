@@ -1,0 +1,10 @@
+PassengerEnabled on
+PassengerAppRoot /home/tyznqxrrro/mojlektor.com
+PassengerStartupFile server.js
+PassengerAppType node
+PassengerNodejs /home/tyznqxrrro/nodevenv/mojlektor.com/20/bin/node
+
+DirectoryIndex disabled
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ - [L]

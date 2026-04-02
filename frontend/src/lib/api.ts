@@ -111,10 +111,13 @@ export class ApiError extends Error {
   }
 };
 
-const normalizePath = (path: string) => (path.startsWith("/") ? path : `/${path}`);
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+
+const buildUrl = (path: string) =>
+  `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 
 export const postJson = async <T>(path: string, body: unknown): Promise<T> => {
-  const response = await fetch(normalizePath(path), {
+  const response = await fetch(buildUrl(path), {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

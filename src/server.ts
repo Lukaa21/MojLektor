@@ -9,15 +9,17 @@ const app = express();
 app.set("trust proxy", 1);
 app.use(helmet());
 
-const allowedOrigins = [
-  process.env.APP_URL,
-  process.env.NEXT_PUBLIC_API_BASE_URL,
-].filter(Boolean) as string[];
-
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: [
+      "https://mojlektor.com",
+      "https://www.mojlektor.com",
+      "http://localhost:3000",
+      "http://localhost:3001",
+    ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 

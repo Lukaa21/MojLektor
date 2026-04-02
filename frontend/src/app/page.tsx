@@ -519,8 +519,9 @@ const submitUploadedFile = async (
   formData.append("textType", textType);
   formData.append("language", language);
 
-  const response = await fetch("/api/upload", {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ?? ""}/api/upload`, {
     method: "POST",
+    credentials: "include",
     body: formData,
   });
 
@@ -562,8 +563,9 @@ const submitEstimateFromUploadedFile = async (
   formData.append("textType", textType);
   formData.append("language", language);
 
-  const response = await fetch("/api/estimate", {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ?? ""}/api/estimate`, {
     method: "POST",
+    credentials: "include",
     body: formData,
   });
 

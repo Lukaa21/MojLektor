@@ -29,7 +29,7 @@ export default function SuccessPage() {
 
       try {
         const response = await fetch(
-          `/api/tokens/checkout-session?session_id=${encodeURIComponent(sessionId)}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL ?? ""}/api/tokens/checkout-session?session_id=${encodeURIComponent(sessionId)}`,
           { credentials: "include" }
         );
 

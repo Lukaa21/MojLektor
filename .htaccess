@@ -1,0 +1,21 @@
+PassengerEnabled on
+PassengerAppRoot /home/tyznqxrrro/api.mojlektor.com
+PassengerStartupFile server.js
+PassengerAppType node
+PassengerNodejs /home/tyznqxrrro/nodevenv/api.mojlektor.com/20/bin/node
+
+DirectoryIndex disabled
+
+<IfModule mod_headers.c>
+    SetEnvIf Origin "^https://(www\.)?mojlektor\.com$" CORS_ORIGIN=$0
+    Header always setifempty Access-Control-Allow-Origin "%{CORS_ORIGIN}e" env=CORS_ORIGIN
+    Header always setifempty Access-Control-Allow-Credentials "true" env=CORS_ORIGIN
+    Header always setifempty Access-Control-Allow-Methods "GET, POST, OPTIONS" env=CORS_ORIGIN
+    Header always setifempty Access-Control-Allow-Headers "Content-Type" env=CORS_ORIGIN
+</IfModule>
+
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^ - [R=204,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ - [L]
